@@ -18,14 +18,16 @@ function isPrivateHost(host: string) {
 }
 
 export function normalizeDistrictUrl(input: string) {
+	// Pasted links can carry spaces or invisible characters (zero-width, BOM, NBSP).
+	const cleaned = input.replace(/[\u200B-\u200D\u2060\uFEFF]/g, '').trim();
 	let url: URL;
 	try {
-		url = new URL(/^\w+:\/\//.test(input.trim()) ? input.trim() : `https://${input.trim()}`);
+		url = new URL(/^\w+:\/\//.test(cleaned) ? cleaned : `https://${cleaned}`);
 	} catch {
 		return undefined;
 	}
 	const host = url.hostname.toLowerCase();
-	if (url.protocol !== 'https:' || isPrivateHost(host)) return undefined;
+	if (url.protocol !== 'https:' || !host.includes('.') || isPrivateHost(host)) return undefined;
 	if (allowed.length && !allowed.includes(host)) return undefined;
 	return `https://${url.host}`;
 }

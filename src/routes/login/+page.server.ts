@@ -11,7 +11,12 @@ export const actions = {
 		const password = String(form.get('password') ?? '');
 
 		const base = normalizeDistrictUrl(district);
-		if (!base) return fail(400, { district, username, error: 'Enter a valid https district portal URL' });
+		if (!base)
+			return fail(400, {
+				district,
+				username,
+				error: `Enter a valid https district portal URL (received ${JSON.stringify(district)})`
+			});
 		if (!username || !password)
 			return fail(400, { district, username, error: 'Enter your username and password' });
 
