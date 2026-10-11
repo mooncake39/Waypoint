@@ -10,7 +10,8 @@
 		"start": "node build",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"test": "vitest run",
-		"capture": "tsx capture/capture.ts"
+		"capture": "tsx capture/capture.ts",
+		"convert": "tsx capture/convert.ts"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-node": "^6.0.0",
