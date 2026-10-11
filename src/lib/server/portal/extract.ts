@@ -86,3 +86,50 @@ export function extractJsObject<T = unknown>(html: string, name: string): T | un
 	}
 	return undefined;
 }
+
+/**
+ * Reads a JS string literal starting at `html[start]` (a quote character) and
+ * returns its unescaped value and the index just past the closing quote.
+ */
+function readJsString(html: string, start: number) {
+	const quote = html[start];
+	if (quote !== "'" && quote !== '"') return undefined;
+	let out = '';
+	for (let i = start + 1; i < html.length; i++) {
+		const c = html[i];
+		if (c === quote) return { value: out, end: i + 1 };
+		if (c !== '\\') {
+			out += c;
+			continue;
+		}
+		const next = html[++i];
+		if (next === 'u') {
+			out += String.fromCharCode(parseInt(html.slice(i + 1, i + 5), 16));
+			i += 4;
+		} else out += ({ n: '\n', r: '\r', t: '\t' } as Record<string, string>)[next] ?? next;
+	}
+	return undefined;
+}
+
+/**
+ * Finds `PXPRemoteDataStore('<dataSourceId>', '<gridParameters>')` on the
+ * class-schedule page (handoff §7). Both values are returned verbatim.
+ */
+export function extractRemoteDataStore(html: string) {
+	const call = html.indexOf('PXPRemoteDataStore(');
+	if (call < 0) return undefined;
+
+	let i = call + 'PXPRemoteDataStore('.length;
+	const args: string[] = [];
+	while (args.length < 2) {
+		while (/[\s,]/.test(html[i] ?? '')) i++;
+		const lit = readJsString(html, i);
+		if (!lit) return undefined;
+		args.push(lit.value);
+		i = lit.end;
+	}
+
+	const [dataSourceId, gridParameters] = args;
+	if (!/^[0-9a-f-]{36}$/i.test(dataSourceId)) return undefined;
+	return { dataSourceId, gridParameters };
+}

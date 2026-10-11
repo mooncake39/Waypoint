@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { extractJsObject, htmlUnescape, parseLoginForm } from './extract';
+import { extractJsObject, extractRemoteDataStore, htmlUnescape, parseLoginForm } from './extract';
 
 describe('extractJsObject', () => {
 	const page = `<script>
@@ -52,4 +52,24 @@ describe('parseLoginForm', () => {
 
 test('htmlUnescape', () => {
 	expect(htmlUnescape('a&amp;b&#39;c&#x41;&quot;')).toBe(`a&b'cA"`);
+});
+
+describe('extractRemoteDataStore', () => {
+	const id = '0F1E2D3C-4B5A-6978-8796-A5B4C3D2E1F0';
+
+	test('reads both arguments verbatim, unescaping quotes', () => {
+		const html = `var store = new DevExpress.PXPRemoteDataStore('${id}', '{"schoolName":"St. Mary\\'s High","orgYearGU":"<ORG>","AGU":"0"}');`;
+		const store = extractRemoteDataStore(html);
+		expect(store?.dataSourceId).toBe(id);
+		expect(JSON.parse(store!.gridParameters)).toEqual({
+			schoolName: "St. Mary's High",
+			orgYearGU: '<ORG>',
+			AGU: '0'
+		});
+	});
+
+	test('returns undefined when absent or malformed', () => {
+		expect(extractRemoteDataStore('<html>login</html>')).toBeUndefined();
+		expect(extractRemoteDataStore(`PXPRemoteDataStore('not-a-guid', '{}')`)).toBeUndefined();
+	});
 });

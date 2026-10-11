@@ -3,6 +3,7 @@
 
 import { extractJsObject } from './extract';
 import { PortalClient, PortalError } from './http';
+import { fetchSchedule, matchSchedule, type ScheduleEntry } from './schedule';
 
 export interface GradingPeriod {
 	Name: string;
@@ -37,6 +38,8 @@ interface AsmxEnvelope<T> {
 
 export interface RawClass {
 	info: ClassInfo;
+	/** Period, room, emails from the class schedule; undefined if no unique match. */
+	schedule?: ScheduleEntry;
 	classData: unknown;
 	contentItems: unknown;
 }
@@ -45,6 +48,8 @@ export interface RawGradebook {
 	periods: GradingPeriod[];
 	periodIndex: number;
 	classes: RawClass[];
+	/** All schedule rows, for display and debugging of the class match. */
+	schedule: ScheduleEntry[];
 	fetchedAt: number;
 }
 
@@ -106,6 +111,8 @@ export async function fetchGradebook(client: PortalClient, periodIndex?: number)
 	const period = periods[index];
 	if (!period) throw new PortalError('GradebookPage', 'empty');
 	const markPeriodGU = period.MarkPeriods[0]?.GU;
+
+	const schedule = await fetchSchedule(client);
 
 	const classList = await asmx<{ Classes: ClassInfo[] }>(
 		client,
@@ -172,8 +179,13 @@ export async function fetchGradebook(client: PortalClient, periodIndex?: number)
 			clientState: {}
 		});
 
-		classes.push({ info, classData: stripPrivate(gcd), contentItems: lwo });
+		classes.push({
+			info,
+			schedule: matchSchedule(schedule, info.Name, info.TeacherName),
+			classData: stripPrivate(gcd),
+			contentItems: lwo
+		});
 	}
 
-	return { periods, periodIndex: index, classes, fetchedAt: Date.now() };
+	return { periods, periodIndex: index, classes, schedule, fetchedAt: Date.now() };
 }
