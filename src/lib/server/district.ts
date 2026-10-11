@@ -19,7 +19,9 @@ function isPrivateHost(host: string) {
 
 export function normalizeDistrictUrl(input: string) {
 	// Pasted links can carry spaces or invisible characters (zero-width, BOM, NBSP).
-	const cleaned = input.replace(/[\u200B-\u200D\u2060\uFEFF]/g, '').trim();
+	let cleaned = input.replace(/[\u200B-\u200D\u2060\uFEFF]/g, '').trim();
+	// A bare district code like "xx-district-psv" means `<code>.edupoint.com`.
+	if (/^[a-z0-9-]+$/i.test(cleaned)) cleaned += '.edupoint.com';
 	let url: URL;
 	try {
 		url = new URL(/^\w+:\/\//.test(cleaned) ? cleaned : `https://${cleaned}`);

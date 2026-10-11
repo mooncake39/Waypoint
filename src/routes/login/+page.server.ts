@@ -15,7 +15,7 @@ export const actions = {
 			return fail(400, {
 				district,
 				username,
-				error: `Enter a valid https district portal URL (received ${JSON.stringify(district)})`
+				error: `Enter a district like xx-district-psv or an https portal URL (received ${JSON.stringify(district)})`
 			});
 		if (!username || !password)
 			return fail(400, { district, username, error: 'Enter your username and password' });

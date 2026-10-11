@@ -13,8 +13,8 @@
 
 <form method="POST" onsubmit={() => (submitting = true)}>
 	<p>
-		<label>District portal URL<br />
-			<input name="district" placeholder="https://xx-district-psv.edupoint.com" value={form?.district ?? ''} required />
+		<label>District (the part before .edupoint.com, or the full portal URL)<br />
+			<input name="district" placeholder="xx-district-psv" value={form?.district ?? ''} required />
 		</label>
 	</p>
 	<p>
