@@ -1,6 +1,6 @@
 # waypoint
 
-Bare-bones StudentVUE grade fetcher. You log in with your district portal URL, username and password, and it shows the raw gradebook data from the portal's web API as JSON. There's no UI yet. See `../gradecompass-main/studentvue-web-api-handoff.md` for the protocol.
+StudentVUE grade fetcher. No UI; testing app. See `../gradecompass-main/studentvue-web-api-handoff.md` for the protocol.
 
 ## Run
 
@@ -34,5 +34,3 @@ Optional runtime env: `DEFAULT_DISTRICT` (`xx-district-psv`, used when the distr
 - `src/routes/login`, `src/routes/data`, `src/routes/logout`
 
 Imports use `#lib/...ts` (Node subpath imports, set in `package.json`), because SvelteKit 3 removed `$lib`.
-
-For personal or household use only. Running it for other people means their credentials pass through your server.
