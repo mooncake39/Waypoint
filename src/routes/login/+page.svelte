@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 
-	let { form } = $props();
+	let { data, form } = $props();
 	let submitting = $state(false);
 </script>
 
@@ -13,8 +13,8 @@
 
 <form method="POST" onsubmit={() => (submitting = true)}>
 	<p>
-		<label>District (the part before .edupoint.com, or the full portal URL)<br />
-			<input name="district" placeholder="xx-district-psv" defaultValue={form?.district ?? ''} required />
+		<label>District (the part before .edupoint.com, or the full portal URL; blank = {data.defaultDistrict})<br />
+			<input name="district" placeholder={data.defaultDistrict} defaultValue={form?.district ?? ''} />
 		</label>
 	</p>
 	<p>

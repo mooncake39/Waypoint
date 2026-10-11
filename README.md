@@ -22,7 +22,7 @@ ORIGIN=http://localhost:3000 npm run build
 PORT=3000 node build
 ```
 
-Optional runtime env: `SESSION_TTL_MINUTES` (30), `PORTAL_TIMEOUT_MS` (20000), `ALLOWED_DISTRICT_HOSTS` (comma-separated).
+Optional runtime env: `DEFAULT_DISTRICT` (`xx-district-psv`, used when the district field is blank), `SESSION_TTL_MINUTES` (30), `PORTAL_TIMEOUT_MS` (20000), `ALLOWED_DISTRICT_HOSTS` (comma-separated).
 
 ## Layout
 

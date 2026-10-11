@@ -53,8 +53,13 @@ export async function login(base: string, username: string, password: string) {
 		throw new LoginError('network');
 	}
 
+	// Success is a redirect away from the login page (e.g. to Home_PXP2.aspx).
+	// If the session turns out to be bad, the first gradebook fetch catches it.
 	const location = res.headers.get('location') ?? '';
-	if (res.status === 302 && /PXP2_/i.test(location) && !/Login/i.test(location)) return client;
+	const locationPath = location.split('?')[0];
+	if (res.status >= 300 && res.status < 400 && locationPath && !/Login/i.test(locationPath))
+		return client;
 	if (res.status === 200) throw new LoginError('credentials');
+	console.log(`Login unexpected response: ${res.status} location=${locationPath || '(none)'}`);
 	throw new LoginError('unexpected');
 }

@@ -3,6 +3,11 @@ import { login, LoginError } from '#lib/server/portal/login.ts';
 import { createSession } from '#lib/server/sessions.ts';
 import { fail, redirect } from '@sveltejs/kit';
 
+// Used when the district field is left blank.
+const DEFAULT_DISTRICT = process.env.DEFAULT_DISTRICT || 'xx-district-psv';
+
+export const load = () => ({ defaultDistrict: DEFAULT_DISTRICT });
+
 export const actions = {
 	default: async ({ request, cookies, url }) => {
 		const form = await request.formData();
@@ -10,7 +15,7 @@ export const actions = {
 		const username = String(form.get('username') ?? '');
 		const password = String(form.get('password') ?? '');
 
-		const base = normalizeDistrictUrl(district);
+		const base = normalizeDistrictUrl(district.trim() || DEFAULT_DISTRICT);
 		if (!base)
 			return fail(400, {
 				district,
