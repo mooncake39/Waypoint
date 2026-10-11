@@ -9,7 +9,7 @@ npm install
 npm run dev        # http://localhost:5173
 npm test           # vitest
 npm run check      # svelte-check
-npm run capture    # dev-only: anonymized snapshot of your data → capture/output/ (add -- --all for every period)
+npm run capture    # dev-only: snapshot of your real data → capture/output/ (add -- --all for every period)
 ```
 
 `capture/` (the script and its output) is git-ignored and blocked by a local pre-commit hook, so it isn't in the repo. It holds real grades.
