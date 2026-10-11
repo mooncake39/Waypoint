@@ -5,3 +5,6 @@ build
 .env.*
 !.env.example
 .DS_Store
+
+# Dev-only capture script and its output (real grade data). Never commit.
+/capture/

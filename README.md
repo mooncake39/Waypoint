@@ -9,7 +9,10 @@ npm install
 npm run dev        # http://localhost:5173
 npm test           # vitest
 npm run check      # svelte-check
+npm run capture    # dev-only: anonymized snapshot of your data → capture/output/ (add -- --all for every period)
 ```
+
+`capture/` (the script and its output) is git-ignored and blocked by a local pre-commit hook, so it isn't in the repo. It holds real grades.
 
 `npm install` reads `.npmrc` (`legacy-peer-deps=true`), which works around an npm 10 resolver crash on vitest 5's optional peers.
 
