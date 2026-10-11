@@ -14,12 +14,12 @@
 <form method="POST" onsubmit={() => (submitting = true)}>
 	<p>
 		<label>District (the part before .edupoint.com, or the full portal URL)<br />
-			<input name="district" placeholder="xx-district-psv" value={form?.district ?? ''} required />
+			<input name="district" placeholder="xx-district-psv" defaultValue={form?.district ?? ''} required />
 		</label>
 	</p>
 	<p>
 		<label>Username<br />
-			<input name="username" autocomplete="username" value={form?.username ?? ''} required />
+			<input name="username" autocomplete="username" defaultValue={form?.username ?? ''} required />
 		</label>
 	</p>
 	<p>
