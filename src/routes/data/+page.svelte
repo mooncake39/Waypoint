@@ -17,7 +17,7 @@
 	);
 </script>
 
-<form method="POST" action="/logout"><button>Log out</button></form>
+<p><a href="/grades">← Grades</a> · Raw portal data (debug view)</p>
 
 <form method="GET">
 	<label>Grading period

@@ -36,19 +36,20 @@ export function getSession(sid: string | undefined) {
 
 export const deleteSession = (sid: string) => sessions.delete(sid);
 
+/** Whether a result answers a request; no period means the current (default-focus) one. */
+const answers = (result: RawGradebook, periodIndex: number | undefined) =>
+	periodIndex === undefined
+		? result.periods[result.periodIndex]?.defaultFocus === true
+		: result.periodIndex === periodIndex;
+
 export async function refresh(session: Session, periodIndex?: number) {
 	const { cache } = session;
-	if (
-		cache &&
-		Date.now() - cache.fetchedAt < CACHE_MS &&
-		(periodIndex === undefined || periodIndex === cache.periodIndex)
-	)
-		return cache;
+	if (cache && Date.now() - cache.fetchedAt < CACHE_MS && answers(cache, periodIndex)) return cache;
 
 	// Wait for any running refresh first so two never overlap on one session.
 	while (session.inflight) {
 		const running = await session.inflight.catch(() => undefined);
-		if (running && (periodIndex === undefined || periodIndex === running.periodIndex)) return running;
+		if (running && answers(running, periodIndex)) return running;
 	}
 
 	session.inflight = fetchGradebook(session.client, periodIndex);

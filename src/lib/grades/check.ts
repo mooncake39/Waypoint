@@ -12,9 +12,9 @@ import {
 	getHiddenAssignmentsFromCategories,
 	getPointsByCategory,
 	gradesMatch,
-	parseSynergyAssignment,
-	type Category
+	parseSynergyAssignment
 } from './assignments';
+import { getSynergyCourseAssignmentCategories } from './course';
 
 export interface GradeCheck {
 	course: string;
@@ -29,17 +29,7 @@ export function checkCourseGrade(course: Course): GradeCheck | undefined {
 	const mark = course.Marks?.Mark[0];
 	if (!mark || mark._CalculatedScoreRaw === '') return undefined;
 
-	// Same mapping as GradeCompass's getSynergyCourseAssignmentCategories.
-	const categories: Category[] | undefined = mark.GradeCalculationSummary?.AssignmentGradeCalc.map(
-		(c) => ({
-			name: c._Type,
-			weightPercentage: parseFloat(c._Weight),
-			pointsEarned: parseFloat(c._Points),
-			pointsPossible: parseFloat(c._PointsPossible),
-			weightedPercentage: parseFloat(c._WeightedPct),
-			gradeLetter: c._CalculatedMark
-		})
-	);
+	const categories = getSynergyCourseAssignmentCategories(course);
 	const gradeCategories = categories?.filter((c) => c.name !== 'TOTAL');
 
 	const real = calculateAssignmentGPCs(
