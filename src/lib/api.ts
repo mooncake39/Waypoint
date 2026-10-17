@@ -59,7 +59,8 @@ function reloginWithStoredCredentials() {
 	return relogin;
 }
 
-async function getJson<T>(url: string, onReceivingData?: () => void): Promise<T> {
+/** GET with one automatic re-login on 401. */
+async function getWithRelogin(url: string) {
 	let res = await fetch(url);
 	if (res.status === 401) {
 		await reloginWithStoredCredentials();
@@ -67,16 +68,22 @@ async function getJson<T>(url: string, onReceivingData?: () => void): Promise<T>
 		if (res.status === 401) throw new SessionExpiredError();
 	}
 	if (!res.ok) throw new Error(`Server returned HTTP ${res.status}`);
-	onReceivingData?.();
-	return (await res.json()) as T;
+	return res;
 }
 
-/** The gradebook for a grading period index, or the current period when omitted. */
-export const fetchGradebook = (period?: number, onReceivingData?: () => void) =>
-	getJson<Gradebook>(
-		period === undefined ? '/api/gradebook' : `/api/gradebook?period=${period}`,
-		onReceivingData
+/**
+ * The gradebook for a grading period index, or the current period when omitted.
+ * `fetchedAt` is when the server got it from the portal (it may serve a cached copy).
+ */
+export async function fetchGradebook(period?: number, onReceivingData?: () => void) {
+	const res = await getWithRelogin(
+		period === undefined ? '/api/gradebook' : `/api/gradebook?period=${period}`
 	);
+	onReceivingData?.();
+	const gradebook = (await res.json()) as Gradebook;
+	const fetchedAt = Number(res.headers.get('X-Fetched-At')) || Date.now();
+	return { gradebook, fetchedAt };
+}
 
 export async function logout() {
 	await fetch('/logout', { method: 'POST' }).catch(() => undefined);

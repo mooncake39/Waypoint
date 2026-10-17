@@ -57,7 +57,8 @@ export async function getGradebookRecord(
 	onReceivingData?: () => void,
 	reportPeriod?: number
 ): Promise<GradebookRecord> {
-	return { gradebook: await fetchGradebook(reportPeriod, onReceivingData), lastRefresh: Date.now() };
+	const { gradebook, fetchedAt } = await fetchGradebook(reportPeriod, onReceivingData);
+	return { gradebook, lastRefresh: fetchedAt };
 }
 
 export async function getInitialGradebookCatalog(): Promise<GradebookCatalog> {

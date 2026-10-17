@@ -39,11 +39,19 @@ beforeEach(() => vi.stubGlobal('localStorage', memoryStorage()));
 afterEach(() => vi.unstubAllGlobals());
 
 describe('fetchGradebook', () => {
+	test("uses the server's fetch time when it sends one", async () => {
+		vi.stubGlobal(
+			'fetch',
+			vi.fn(async () => new Response(JSON.stringify(gradebook), { headers: { 'X-Fetched-At': '1700000000000' } }))
+		);
+		await expect(fetchGradebook()).resolves.toEqual({ gradebook, fetchedAt: 1700000000000 });
+	});
+
 	test('logs in again with the stored credentials when the session expired, then retries', async () => {
 		saveCredentials({ district: 'xx-district-psv', username: 'u', password: 'p' });
 		const fetchMock = fakeServer();
 
-		await expect(fetchGradebook(2)).resolves.toEqual(gradebook);
+		await expect(fetchGradebook(2)).resolves.toMatchObject({ gradebook });
 		expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
 			'/api/gradebook?period=2',
 			'/api/login',

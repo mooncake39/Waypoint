@@ -7,7 +7,7 @@ export const load = async ({ locals, url, cookies }) => {
 
 	const period = url.searchParams.get('period');
 	try {
-		return { gradebook: await refresh(locals.session, period === null ? undefined : Number(period)) };
+		return { gradebook: (await refresh(locals.session, period === null ? undefined : Number(period))).raw };
 	} catch (e) {
 		// Any portal failure means "Session expired" (handoff §4).
 		console.log(e instanceof PortalError ? e.message : e);
