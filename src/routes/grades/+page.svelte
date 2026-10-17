@@ -14,6 +14,9 @@
 	import { checkCourseGrade } from '#lib/grades/check.ts';
 	import { getCourseGrade } from '#lib/grades/course.ts';
 	import { getActiveGradebook } from '#lib/grades/gradebook.ts';
+	import * as Alert from '#lib/components/ui/alert/index.ts';
+	import { Button } from '#lib/components/ui/button/index.ts';
+	import * as Table from '#lib/components/ui/table/index.ts';
 	import { onMount } from 'svelte';
 
 	const catalog = $derived(gradebookState.gradebookCatalog);
@@ -38,77 +41,102 @@
 	}
 </script>
 
-<button onclick={logOut}>Log out</button>
-
-{#if catalog}
-	<p>
-		<label>Grading period
-			<select
-				value={String(activeIndex)}
+<main class="mx-auto flex max-w-5xl flex-col gap-4 p-4">
+	<div class="flex flex-wrap items-center gap-2">
+		{#if catalog}
+			<label class="flex items-center gap-2 text-sm">
+				Grading period
+				<select
+					class="border-input bg-background h-9 rounded-md border px-2"
+					value={String(activeIndex)}
+					disabled={catalog.loadingIndex !== undefined}
+					onchange={(e) => switchReportPeriod({ overrideIndex: Number(e.currentTarget.value) })}
+				>
+					{#each catalog.canonicalReportPeriodEntries ?? [] as p, i (i)}
+						<option value={String(i)}>{p._GradePeriod}{i === catalog.defaultIndex ? ' (current)' : ''}</option>
+					{/each}
+				</select>
+			</label>
+			<Button
+				variant="outline"
+				size="sm"
 				disabled={catalog.loadingIndex !== undefined}
-				onchange={(e) => switchReportPeriod({ overrideIndex: Number(e.currentTarget.value) })}
+				onclick={() => switchReportPeriod({ overrideIndex: catalog.overrideIndex, forceRefresh: true })}
 			>
-				{#each catalog.canonicalReportPeriodEntries ?? [] as p, i (i)}
-					<option value={String(i)}>{p._GradePeriod}{i === catalog.defaultIndex ? ' (current)' : ''}</option>
+				Refresh
+			</Button>
+		{/if}
+		<Button variant="ghost" size="sm" class="ml-auto" onclick={logOut}>Log out</Button>
+	</div>
+
+	{#if catalog?.loadingIndex !== undefined || (!catalog && !gradebookState.loadingError)}
+		<p class="text-muted-foreground text-sm">
+			Loading {catalog?.loadingIndex !== undefined ? getReportPeriodName(catalog.loadingIndex) : 'grades'}…
+			{catalog?.receivingData ? '(receiving)' : '(waiting for the portal; this can take 5–15 s)'}
+		</p>
+	{/if}
+	{#if gradebookState.notice}
+		<Alert.Root>
+			<Alert.Title class="flex items-center justify-between">
+				{gradebookState.notice}
+				<Button variant="ghost" size="sm" onclick={() => (gradebookState.notice = undefined)}>×</Button>
+			</Alert.Title>
+		</Alert.Root>
+	{/if}
+	{#if gradebookState.loadingError}
+		<Alert.Root variant="destructive">
+			<Alert.Title>Couldn't load grades</Alert.Title>
+			<Alert.Description>
+				{gradebookState.loadingError instanceof Error
+					? gradebookState.loadingError.message
+					: String(gradebookState.loadingError)}
+			</Alert.Description>
+		</Alert.Root>
+	{/if}
+	{#if record}
+		<p class="text-muted-foreground text-xs">Last refreshed {new Date(record.lastRefresh).toLocaleTimeString()}</p>
+	{/if}
+
+	{#if gradebook}
+		<Table.Root>
+			<Table.Header>
+				<Table.Row>
+					<Table.Head>Period</Table.Head>
+					<Table.Head>Class</Table.Head>
+					<Table.Head>Teacher</Table.Head>
+					<Table.Head>Room</Table.Head>
+					<Table.Head>Grade</Table.Head>
+					<Table.Head>Assignments</Table.Head>
+					<Table.Head>Self-check</Table.Head>
+				</Table.Row>
+			</Table.Header>
+			<Table.Body>
+				{#each gradebook.Courses.Course as course (course._CourseID)}
+					{@const grade = getCourseGrade(course)}
+					{@const check = checkCourseGrade(course)}
+					<Table.Row>
+						<Table.Cell>{course._Period || '—'}</Table.Cell>
+						<Table.Cell class="font-medium">{course._CourseName}</Table.Cell>
+						<Table.Cell>
+							{course._Staff}
+							{#if course._StaffEMail}
+								<br /><a class="text-muted-foreground text-xs underline" href="mailto:{course._StaffEMail}">{course._StaffEMail}</a>
+							{/if}
+						</Table.Cell>
+						<Table.Cell>{course._Room || '—'}</Table.Cell>
+						<Table.Cell>{grade ? `${grade.letter} ${grade.percentage}%` : '—'}</Table.Cell>
+						<Table.Cell>{course.Marks?.Mark[0]?.Assignments?.Assignment.length ?? 0}</Table.Cell>
+						<Table.Cell>
+							{#if !check}—{:else if check.matches}✓{:else}≠ calc {check.calculated.toFixed(2)}{/if}
+						</Table.Cell>
+					</Table.Row>
 				{/each}
-			</select>
-		</label>
-		<button
-			disabled={catalog.loadingIndex !== undefined}
-			onclick={() => switchReportPeriod({ overrideIndex: catalog.overrideIndex, forceRefresh: true })}
-		>
-			Refresh
-		</button>
-	</p>
-{/if}
+			</Table.Body>
+		</Table.Root>
 
-{#if catalog?.loadingIndex !== undefined || (!catalog && !gradebookState.loadingError)}
-	<p>
-		Loading {catalog?.loadingIndex !== undefined ? getReportPeriodName(catalog.loadingIndex) : 'grades'}…
-		{catalog?.receivingData ? '(receiving)' : '(waiting for the portal; this can take 5–15 s)'}
-	</p>
-{/if}
-{#if gradebookState.notice}
-	<p><em>{gradebookState.notice}</em> <button onclick={() => (gradebookState.notice = undefined)}>×</button></p>
-{/if}
-{#if gradebookState.loadingError}
-	<p style="color: red">
-		Couldn't load grades: {gradebookState.loadingError instanceof Error ? gradebookState.loadingError.message : String(gradebookState.loadingError)}
-	</p>
-{/if}
-{#if record}
-	<p><small>Last refreshed {new Date(record.lastRefresh).toLocaleTimeString()}</small></p>
-{/if}
-
-{#if gradebook}
-	<table border="1" cellpadding="4" style="border-collapse: collapse">
-		<thead>
-			<tr><th>Period</th><th>Class</th><th>Teacher</th><th>Room</th><th>Grade</th><th>Assignments</th><th>Self-check</th></tr>
-		</thead>
-		<tbody>
-			{#each gradebook.Courses.Course as course (course._CourseID)}
-				{@const grade = getCourseGrade(course)}
-				{@const check = checkCourseGrade(course)}
-				<tr>
-					<td>{course._Period || '—'}</td>
-					<td>{course._CourseName}</td>
-					<td>
-						{course._Staff}
-						{#if course._StaffEMail}<br /><a href="mailto:{course._StaffEMail}">{course._StaffEMail}</a>{/if}
-					</td>
-					<td>{course._Room || '—'}</td>
-					<td>{grade ? `${grade.letter} ${grade.percentage}%` : '—'}</td>
-					<td>{course.Marks?.Mark[0]?.Assignments?.Assignment.length ?? 0}</td>
-					<td>
-						{#if !check}—{:else if check.matches}✓{:else}≠ calc {check.calculated.toFixed(2)}{/if}
-					</td>
-				</tr>
-			{/each}
-		</tbody>
-	</table>
-
-	<details>
-		<summary>Gradebook JSON (GradeCompass shape)</summary>
-		<pre>{JSON.stringify(gradebook, null, 2)}</pre>
-	</details>
-{/if}
+		<details class="text-xs">
+			<summary class="cursor-pointer">Gradebook JSON (GradeCompass shape)</summary>
+			<pre class="overflow-auto">{JSON.stringify(gradebook, null, 2)}</pre>
+		</details>
+	{/if}
+</main>

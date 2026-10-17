@@ -5,6 +5,10 @@
 	import { loadCredentials, saveCredentials } from '#lib/credentials.ts';
 	import { clearGradebookCatalogFromLocalStorage } from '#lib/grades/catalog.ts';
 	import { resetGradebookState } from '#lib/grades/catalog.svelte.ts';
+	import * as Alert from '#lib/components/ui/alert/index.ts';
+	import { Button } from '#lib/components/ui/button/index.ts';
+	import { Input } from '#lib/components/ui/input/index.ts';
+	import { Label } from '#lib/components/ui/label/index.ts';
 	import { onMount } from 'svelte';
 
 	let { data } = $props();
@@ -46,33 +50,45 @@
 	}
 </script>
 
-<h1>Log in</h1>
+<main class="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-4 p-4">
+	<h1 class="text-2xl font-semibold tracking-tight">Log in</h1>
 
-{#if page.url.searchParams.has('expired') && !error}
-	<p style="color: red">Session expired</p>
-{/if}
+	{#if page.url.searchParams.has('expired') && !error}
+		<Alert.Root variant="destructive"><Alert.Title>Session expired</Alert.Title></Alert.Root>
+	{/if}
 
-<form onsubmit={submit}>
-	<p>
-		<label>District (the part before .edupoint.com, or the full portal URL; blank = {data.defaultDistrict})<br />
-			<input name="district" placeholder={data.defaultDistrict} bind:value={district} />
-		</label>
+	<form onsubmit={submit} class="flex flex-col gap-4">
+		<div class="grid gap-2">
+			<Label for="district">District</Label>
+			<Input id="district" name="district" placeholder={data.defaultDistrict} bind:value={district} />
+			<p class="text-muted-foreground text-xs">
+				The part before .edupoint.com, or the full portal URL. Blank uses {data.defaultDistrict}.
+			</p>
+		</div>
+		<div class="grid gap-2">
+			<Label for="username">Username</Label>
+			<Input id="username" name="username" autocomplete="username" bind:value={username} required />
+		</div>
+		<div class="grid gap-2">
+			<Label for="password">Password</Label>
+			<Input
+				id="password"
+				name="password"
+				type="password"
+				autocomplete="current-password"
+				bind:value={password}
+				required
+			/>
+		</div>
+		<Button type="submit" disabled={submitting}>{submitting ? 'Logging in…' : 'Log in'}</Button>
+	</form>
+
+	{#if error}
+		<Alert.Root variant="destructive"><Alert.Title>{error}</Alert.Title></Alert.Root>
+	{/if}
+
+	<p class="text-muted-foreground text-xs">
+		Your login is saved in this browser so the app can reconnect when the server session expires. Log
+		out to remove it.
 	</p>
-	<p>
-		<label>Username<br />
-			<input name="username" autocomplete="username" bind:value={username} required />
-		</label>
-	</p>
-	<p>
-		<label>Password<br />
-			<input name="password" type="password" autocomplete="current-password" bind:value={password} required />
-		</label>
-	</p>
-	<button disabled={submitting}>{submitting ? 'Logging in…' : 'Log in'}</button>
-</form>
-
-{#if error}
-	<p style="color: red">{error}</p>
-{/if}
-
-<p><small>Your login is saved in this browser so the app can reconnect when the server session expires. Log out to remove it.</small></p>
+</main>
