@@ -109,9 +109,24 @@ function recordError(error: unknown) {
 	console.error('Error loading grades:', error);
 }
 
-/** For the UI: switch period or refresh; errors land in `gradebookState`. */
+/**
+ * For the UI: switch period or refresh; errors land in `gradebookState`.
+ * The loading banner shows only for a manual refresh (`forceRefresh`) or a period
+ * with nothing cached yet. A cached period is shown at once and, if stale,
+ * refreshed quietly like the auto-refresh.
+ */
 export async function switchReportPeriod(options: { overrideIndex?: number; forceRefresh?: boolean } = {}) {
 	gradebookState.loadingError = undefined;
+	const catalog = gradebookState.gradebookCatalog;
+	const record = catalog?.recordCache[options.overrideIndex ?? catalog.defaultIndex];
+
+	if (catalog && record && !options.forceRefresh) {
+		setReportPeriodIndex(options.overrideIndex ?? catalog.defaultIndex);
+		saveGradebookCatalogToLocalStorage(catalog);
+		if (gradebookRefreshNeeded(record)) await refreshInBackground();
+		return;
+	}
+
 	try {
 		await loadReportPeriod(options);
 	} catch (error) {
