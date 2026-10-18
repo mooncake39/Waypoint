@@ -42,6 +42,7 @@
 	import RotateCCWIcon from '@lucide/svelte/icons/rotate-ccw';
 	import NumberFlow from '@number-flow/svelte';
 	import { untrack } from 'svelte';
+	import { setScoreScaleContext } from './scaleContext.ts';
 	import { fade } from 'svelte/transition';
 	import AssignmentTabs from './AssignmentTabs.svelte';
 	import CalculationError from './CalculationError.svelte';
@@ -66,6 +67,9 @@
 	);
 
 	const gradeCategories = $derived(categories?.filter((category) => category.name !== 'TOTAL'));
+
+	// 0–4 classes: assignment cards show grade changes on that scale.
+	setScoreScaleContext(() => mark?._ScoreScale);
 
 	const synergyAssignments = $derived(mark?.Assignments?.Assignment ?? []);
 

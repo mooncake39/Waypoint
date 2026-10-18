@@ -11,6 +11,7 @@
 	import { Progress } from '#lib/components/ui/progress/index.ts';
 	import * as Select from '#lib/components/ui/select/index.ts';
 	import { calculateGradePercentage } from '#lib/grades/assignments.ts';
+	import { getScoreScale } from './scaleContext.ts';
 	import MessageCircleIcon from '@lucide/svelte/icons/message-circle';
 	import TextAlignStartIcon from '@lucide/svelte/icons/text-align-start';
 
@@ -87,9 +88,13 @@
 		return 'red';
 	});
 
+	// On a non-percent scale (e.g. 0–4) the change is shown in scale points, without %.
+	const scale = $derived(getScoreScale());
 	const gradePercentageChangeRounded = $derived(
-		Math.round((gradePercentageChange ?? 0) * 100) / 100
+		Math.round(((gradePercentageChange ?? 0) * (scale ? scale.max / 100 : 1)) * 100) / 100
 	);
+	const changeUnit = $derived(scale ? '' : '%');
+	const changeTitle = $derived(scale ? 'Overall grade change' : 'Overall grade percentage change');
 
 	const getCategory = () => categoryDropdownSelected ?? '';
 
@@ -247,15 +252,15 @@
 
 			{#if gradePercentageChange !== undefined}
 				{#if gradePercentageChangeRounded < 0}
-					<span class="text-red-500" title="Overall grade percentage change">
-						{gradePercentageChangeRounded}%
+					<span class="text-red-500" title={changeTitle}>
+						{gradePercentageChangeRounded}{changeUnit}
 					</span>
 				{:else if gradePercentageChangeRounded > 0}
-					<span class="text-green-500" title="Overall grade percentage change">
-						+{gradePercentageChangeRounded}%
+					<span class="text-green-500" title={changeTitle}>
+						+{gradePercentageChangeRounded}{changeUnit}
 					</span>
 				{:else if !notForGrade && pointsEarned !== undefined && !isNaN(pointsEarned)}
-					<span class="text-slate-500" title="Overall grade percentage change">+0%</span>
+					<span class="text-slate-500" title={changeTitle}>+0{changeUnit}</span>
 				{/if}
 			{/if}
 
