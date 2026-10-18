@@ -11,6 +11,8 @@
 		type CalculableWithCategory,
 		type Category
 	} from '#lib/grades/assignments.ts';
+	import { letterForPercentage, scaleValueFormat, toScaleValue } from '#lib/grades/course.ts';
+	import type { ScoreScale } from '#lib/types/Gradebook.ts';
 	import { cn } from '#lib/utils.ts';
 	import { Area, AreaChart, LinearGradient, Points } from 'layerchart';
 	import { SvelteMap } from 'svelte/reactivity';
@@ -18,18 +20,21 @@
 	interface Props {
 		assignments: Assignment[];
 		gradeCategories?: Category[];
+		/** Non-percent scale (e.g. 0–4): plot and label grades on that scale. */
+		scale?: ScoreScale;
 		animate: boolean;
 		error?: boolean;
 	}
-	let { assignments, gradeCategories, error = false }: Props = $props();
+	let { assignments, gradeCategories, scale, error = false }: Props = $props();
 
 	interface DataPointMetadata {
 		assignmentsOnDate: Assignment[];
 	}
 
-	const chartData: {
+	const percentData: {
 		date: Date;
 		grade: number;
+		metadata: DataPointMetadata;
 	}[] = $derived.by(() => {
 		if (gradeCategories) {
 			const assignmentsByDate: Map<number, CalculableWithCategory<Assignment>[]> = new SvelteMap();
@@ -95,6 +100,14 @@
 		}
 	});
 
+	/** Percentages per date, then converted to the class's scale if it has one. */
+	const chartData = $derived(
+		percentData.map((point) => ({
+			...point,
+			grade: scale ? toScaleValue(scale, point.grade) : point.grade
+		}))
+	);
+
 	const dayFormatter = new Intl.DateTimeFormat('en-US', {
 		weekday: 'long',
 		month: 'long',
@@ -105,16 +118,32 @@
 		style: 'percent',
 		maximumFractionDigits: 3
 	});
+
+	const scaleFormatter = new Intl.NumberFormat('en-US', scaleValueFormat);
 </script>
 
 <Chart.Container config={{}} class="m-4 aspect-auto h-64">
 	<!-- https://techniq-docs-v2.layerchart.pages.dev/docs -->
-	<AreaChart data={chartData} x="date" y="grade" yDomain={null}>
+	<!-- 0–4 classes: fixed 0–max axis labelled like the grade (4.0); percent classes auto-scale. -->
+	<AreaChart
+		data={chartData}
+		x="date"
+		y="grade"
+		yDomain={scale ? [0, scale.max] : null}
+		props={scale ? { yAxis: { format: (v: number) => scaleFormatter.format(v) } } : undefined}
+	>
 		{#snippet tooltip()}
 			<Chart.Tooltip labelFormatter={dayFormatter.format} hideIndicator={true}>
 				{#snippet formatter({ value, item })}
 					<div>
-						<p>{percentFormatter.format(Number(value) / 100)}</p>
+						{#if scale}
+							<p>
+								{letterForPercentage(scale, (Number(value) / scale.max) * 100)}
+								{scaleFormatter.format(Number(value))}
+							</p>
+						{:else}
+							<p>{percentFormatter.format(Number(value) / 100)}</p>
+						{/if}
 						{#each (item.payload.metadata as DataPointMetadata).assignmentsOnDate as assignment (assignment.id)}
 							<p>{assignment.name}</p>
 						{/each}

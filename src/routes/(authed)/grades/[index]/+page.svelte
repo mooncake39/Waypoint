@@ -28,7 +28,12 @@
 		type ReactiveAssignment,
 		type RealAssignment
 	} from '#lib/grades/assignments.ts';
-	import { getSynergyCourseAssignmentCategories, letterForPercentage } from '#lib/grades/course.ts';
+	import {
+		getSynergyCourseAssignmentCategories,
+		formatScaleGrade,
+		letterForPercentage,
+		toScaleValue
+	} from '#lib/grades/course.ts';
 	import { getActiveGradebook } from '#lib/grades/gradebook.ts';
 	import CircleAlertIcon from '@lucide/svelte/icons/circle-alert';
 	import CircleXIcon from '@lucide/svelte/icons/circle-x';
@@ -166,13 +171,20 @@
 
 	const prefix = $derived(hypotheticalMode ? '' : `${mark?._CalculatedScoreString} `);
 
-	// Non-percent scale (e.g. 0–4): show only the letter; in hypothetical mode,
-	// the letter the hypothetical percentage earns on that scale.
-	const scaleLetter = $derived.by(() => {
+	// Non-percent scale (e.g. 0–4): show letter and value on that scale, e.g. "A 4.0";
+	// in hypothetical mode, what the hypothetical percentage earns on it.
+	const scaleGrade = $derived.by(() => {
 		const scale = mark?._ScoreScale;
 		if (!scale) return undefined;
-		if (!hypotheticalMode) return mark._CalculatedScoreString;
-		return letterForPercentage(scale, hypotheticalGrade) ?? mark._CalculatedScoreString;
+		if (hypotheticalMode && Number.isFinite(hypotheticalGrade))
+			return {
+				letter: letterForPercentage(scale, hypotheticalGrade) ?? '',
+				value: toScaleValue(scale, hypotheticalGrade)
+			};
+		return {
+			letter: mark._CalculatedScoreString,
+			value: scale.value ?? toScaleValue(scale, parseFloat(mark._CalculatedScoreRaw))
+		};
 	});
 
 	const grade = $derived(
@@ -238,8 +250,9 @@
 				{#if hypotheticalMode && !categories && !rawGradeCalcMatches}
 					<CircleAlertIcon class="mr-2 h-5 w-5" />
 				{/if}
-				{#if scaleLetter !== undefined}
-					<span>{scaleLetter}</span>
+				{#if scaleGrade !== undefined}
+					<!-- Plain text: NumberFlow didn't redraw for these values in hypothetical mode. -->
+					<span>{formatScaleGrade(scaleGrade.letter, scaleGrade.value)}</span>
 				{:else if grade !== undefined}
 					<NumberFlow
 						{prefix}
@@ -269,6 +282,7 @@
 		<GradeChart
 			assignments={hypotheticalMode ? reactiveAssignments : realAssignments}
 			{gradeCategories}
+			scale={mark?._ScoreScale}
 			animate={!hypotheticalMode}
 			error={!rawGradeCalcMatches}
 		/>

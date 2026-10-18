@@ -323,6 +323,7 @@ describe('buildScoreScale', () => {
 		};
 		expect(buildScoreScale(gcd)).toEqual({
 			max: 4,
+			value: 92.98, // the fixture's totalWeightedPercentage stands in for the 0–4 value
 			letters: [
 				{ letter: 'A', low: 3.5 },
 				{ letter: 'B', low: 2.75 },

@@ -5,6 +5,7 @@
 	import { Progress } from '#lib/components/ui/progress/index.ts';
 	import MapPinHouseIcon from '@lucide/svelte/icons/map-pin-house';
 	import UserIcon from '@lucide/svelte/icons/user';
+	import { formatScaleGrade } from '#lib/grades/course.ts';
 	import NumberFlow from '@number-flow/svelte';
 	import BellElectricIcon from '@lucide/svelte/icons/bell-electric';
 
@@ -15,7 +16,7 @@
 		room: string;
 		teacher: string;
 		teacherEmail: string;
-		grade?: { letter: string; percentage: number; letterOnly?: boolean };
+		grade?: { letter: string; percentage: number; scaleValue?: number };
 	}
 	const { index, name, period, room, teacher, grade }: Props = $props();
 
@@ -73,9 +74,9 @@
 
 	{#if grade}
 		<div class="flex flex-col items-center gap-2 self-end sm:flex-row sm:self-auto">
-			{#if grade.letterOnly}
-				<!-- Graded on a non-percent scale (e.g. 0–4): the letter only. -->
-				<span class="self-end sm:self-auto">{grade.letter}</span>
+			{#if grade.scaleValue !== undefined}
+				<!-- Graded on a non-percent scale (e.g. 0–4): letter and value, e.g. A 4.0 -->
+				<span class="self-end sm:self-auto">{formatScaleGrade(grade.letter, grade.scaleValue)}</span>
 			{:else}
 				<NumberFlow
 					prefix={grade.letter + ' '}

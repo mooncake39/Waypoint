@@ -98,7 +98,7 @@ export interface Mark {
 
 	/**
 	 * Added by this app: present when the class is graded on a non-percent scale
-	 * (e.g. Rubric 0–4). The grade is then shown as a letter only.
+	 * (e.g. Rubric 0–4). The grade is then shown as a letter and a value on that scale.
 	 */
 	_ScoreScale?: ScoreScale;
 }
@@ -106,6 +106,8 @@ export interface Mark {
 export interface ScoreScale {
 	/** Top of the scale, e.g. 4 */
 	max: number;
+	/** The portal's grade on this scale, e.g. 3.75 */
+	value?: number;
 	/** Letter cutoffs on that scale, highest first, e.g. A ≥ 3.5 */
 	letters: { letter: string; low: number }[];
 }

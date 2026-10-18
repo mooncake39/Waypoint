@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import type { Course } from '../types/Gradebook';
-import { getCourseGrade, letterForPercentage } from './course';
+import { getCourseGrade, letterForPercentage, toScaleValue } from './course';
 
 const scale = {
 	max: 4,
@@ -32,12 +32,27 @@ describe('letterForPercentage (0–4 scale)', () => {
 	});
 });
 
-test('getCourseGrade marks non-percent classes as letter-only', () => {
-	const course = (scoreScale?: typeof scale) =>
+test('toScaleValue maps percentages onto the scale', () => {
+	expect(toScaleValue(scale, 100)).toBe(4);
+	expect(toScaleValue(scale, 87.5)).toBe(3.5);
+	expect(toScaleValue(scale, 93.75)).toBe(3.75);
+});
+
+describe('getCourseGrade', () => {
+	const course = (scoreScale?: object, raw = '100') =>
 		({
-			Marks: { Mark: [{ _CalculatedScoreString: 'A', _CalculatedScoreRaw: '100', _ScoreScale: scoreScale }] }
+			Marks: { Mark: [{ _CalculatedScoreString: 'A', _CalculatedScoreRaw: raw, _ScoreScale: scoreScale }] }
 		}) as unknown as Course;
 
-	expect(getCourseGrade(course(scale))).toEqual({ letter: 'A', percentage: 100, letterOnly: true });
-	expect(getCourseGrade(course())).toEqual({ letter: 'A', percentage: 100, letterOnly: false });
+	test('percent classes have no scale value', () => {
+		expect(getCourseGrade(course())).toEqual({ letter: 'A', percentage: 100, scaleValue: undefined });
+	});
+
+	test("0–4 classes use the portal's value on the scale", () => {
+		expect(getCourseGrade(course({ ...scale, value: 3.8 }, '95'))?.scaleValue).toBe(3.8);
+	});
+
+	test('falls back to converting the percentage when the portal value is absent', () => {
+		expect(getCourseGrade(course(scale, '87.5'))?.scaleValue).toBe(3.5);
+	});
 });

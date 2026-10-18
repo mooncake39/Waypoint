@@ -152,7 +152,9 @@ export function buildScoreScale(gcd: ClassData): ScoreScale | undefined {
 		.filter((d) => d.lowScore >= 0)
 		.map((d) => ({ letter: d.score, low: d.lowScore }))
 		.sort((a, b) => b.low - a.low);
-	return letters.length ? { max: cg.maxValue, letters } : undefined;
+	return letters.length
+		? { max: cg.maxValue, value: cg.totalWeightedPercentage, letters }
+		: undefined;
 }
 
 // ---------- categories (§10.3) ----------
