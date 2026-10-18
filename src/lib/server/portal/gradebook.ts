@@ -48,6 +48,8 @@ export interface RawGradebook {
 	periods: GradingPeriod[];
 	periodIndex: number;
 	classes: RawClass[];
+	/** The student's name as the portal gives it (from GetClassData), for display only. */
+	studentName?: string;
 	/** All schedule rows, for display and debugging of the class match. */
 	schedule: ScheduleEntry[];
 	fetchedAt: number;
@@ -130,6 +132,7 @@ export async function fetchGradebook(client: PortalClient, periodIndex?: number)
 	);
 
 	const classes: RawClass[] = [];
+	let studentName: string | undefined;
 	// Sequential on purpose: LoadControl moves the session's single focus (§3 rule 1).
 	for (const info of classList.Data?.Classes ?? []) {
 		const lc = await asmx(
@@ -179,6 +182,11 @@ export async function fetchGradebook(client: PortalClient, periodIndex?: number)
 			clientState: {}
 		});
 
+		// The only place the portal data carries the student's name; read it before stripping.
+		const students = (gcd as { students?: { name?: unknown }[] }).students;
+		if (studentName === undefined && typeof students?.[0]?.name === 'string')
+			studentName = students[0].name.trim() || undefined;
+
 		classes.push({
 			info,
 			schedule: matchSchedule(schedule, info.Name, info.TeacherName),
@@ -187,5 +195,5 @@ export async function fetchGradebook(client: PortalClient, periodIndex?: number)
 		});
 	}
 
-	return { periods, periodIndex: index, classes, schedule, fetchedAt: Date.now() };
+	return { periods, periodIndex: index, classes, studentName, schedule, fetchedAt: Date.now() };
 }

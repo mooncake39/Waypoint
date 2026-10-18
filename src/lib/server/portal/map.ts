@@ -307,6 +307,16 @@ export function buildCourse(raw: RawClass): Course {
 	};
 }
 
+/** Portal names may be "Last, First Middle"; show them as "First Middle Last". */
+export function formatStudentName(name: string) {
+	const clean = name.trim().replace(/\s+/g, ' ');
+	const comma = clean.indexOf(',');
+	if (comma < 0) return clean;
+	const last = clean.slice(0, comma).trim();
+	const first = clean.slice(comma + 1).trim();
+	return first ? `${first} ${last}` : last;
+}
+
 export function toGradebook(raw: RawGradebook): Gradebook {
 	const periods: ReportPeriod[] = raw.periods.map((p, i) => ({
 		_GradePeriod: p.Name,
@@ -330,6 +340,7 @@ export function toGradebook(raw: RawGradebook): Gradebook {
 		_HidePointsColumnElementary: false,
 		_HidePercentSecondary: false,
 		_DisplayStandardsData: false,
-		_GBStandardsTabDefault: false
+		_GBStandardsTabDefault: false,
+		_StudentName: raw.studentName ? formatStudentName(raw.studentName) : undefined
 	};
 }

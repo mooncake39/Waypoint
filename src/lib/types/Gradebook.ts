@@ -1,6 +1,6 @@
 // From GradeCompass (https://github.com/PurelyAnecdotal/gradecompass), MIT License,
 // Copyright (c) 2026 The GradeCompass Authors. See LICENSE-gradecompass.txt.
-// Changed: _ScoreType widened from the literal 'Raw Score' to string.
+// Changed: _ScoreType widened from the literal 'Raw Score' to string; _StudentName added.
 
 export interface GradebookResult {
 	Gradebook: Gradebook;
@@ -21,6 +21,9 @@ export interface Gradebook {
 	_HidePercentSecondary: boolean;
 	_DisplayStandardsData: boolean;
 	_GBStandardsTabDefault: boolean;
+
+	/** Added by this app: the student's display name, e.g. "First Last". */
+	_StudentName?: string;
 }
 
 export interface ReportingPeriods {

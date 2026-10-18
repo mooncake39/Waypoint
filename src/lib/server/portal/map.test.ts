@@ -2,7 +2,14 @@ import { describe, expect, test } from 'vitest';
 import { checkCourseGrade } from '../../grades/check';
 import { parseSynergyAssignment } from '../../grades/assignments';
 import type { RawClass, RawGradebook } from './gradebook';
-import { buildCourse, serverPercentage, toGradebook, type ClassData, type LwoItem } from './map';
+import {
+	buildCourse,
+	formatStudentName,
+	serverPercentage,
+	toGradebook,
+	type ClassData,
+	type LwoItem
+} from './map';
 
 // Synthetic class modelled on the handoff's verified example (§10.3):
 // A w20 100/100, B w40 51/57, C w10 and D w30 empty → 92.98.
@@ -269,5 +276,21 @@ describe('toGradebook', () => {
 
 	test('a class with no grade yet has Marks: null', () => {
 		expect(gb.Courses.Course[1].Marks).toBeNull();
+	});
+
+	test('the student name is passed through formatted, or left out when unknown', () => {
+		expect(gb._StudentName).toBeUndefined();
+		expect(toGradebook({ ...raw, studentName: 'Student, Sam Q' })._StudentName).toBe('Sam Q Student');
+	});
+});
+
+describe('formatStudentName', () => {
+	test.each([
+		['Student, Sam', 'Sam Student'],
+		['  Student ,  Sam   Q ', 'Sam Q Student'],
+		['Sam Student', 'Sam Student'],
+		['Student,', 'Student']
+	])('%j → %j', (input, expected) => {
+		expect(formatStudentName(input)).toBe(expected);
 	});
 });

@@ -25,6 +25,8 @@
 
 	const courses = $derived(getActiveGradebook()?.Courses.Course);
 	const username = loadCredentials()?.username;
+	// Falls back to the username until the gradebook (which carries the name) has loaded.
+	const displayName = $derived(getActiveGradebook()?._StudentName ?? username ?? 'Student');
 
 	/** Ends the server session and removes the saved login and cached grades. */
 	async function logOut() {
@@ -100,7 +102,7 @@
 			<Sidebar.MenuItem>
 				<div class="flex h-10 items-center gap-1 px-2 text-base">
 					<CircleUserIcon class="size-4 shrink-0" />
-					<span class="truncate">{username ?? 'Student'}</span>
+					<span class="truncate" title={username}>{displayName}</span>
 
 					<DropdownMenu.Root>
 						<DropdownMenu.Trigger
