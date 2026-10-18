@@ -28,7 +28,7 @@
 		type ReactiveAssignment,
 		type RealAssignment
 	} from '#lib/grades/assignments.ts';
-	import { getSynergyCourseAssignmentCategories } from '#lib/grades/course.ts';
+	import { getSynergyCourseAssignmentCategories, letterForPercentage } from '#lib/grades/course.ts';
 	import { getActiveGradebook } from '#lib/grades/gradebook.ts';
 	import CircleAlertIcon from '@lucide/svelte/icons/circle-alert';
 	import CircleXIcon from '@lucide/svelte/icons/circle-x';
@@ -166,6 +166,15 @@
 
 	const prefix = $derived(hypotheticalMode ? '' : `${mark?._CalculatedScoreString} `);
 
+	// Non-percent scale (e.g. 0–4): show only the letter; in hypothetical mode,
+	// the letter the hypothetical percentage earns on that scale.
+	const scaleLetter = $derived.by(() => {
+		const scale = mark?._ScoreScale;
+		if (!scale) return undefined;
+		if (!hypotheticalMode) return mark._CalculatedScoreString;
+		return letterForPercentage(scale, hypotheticalGrade) ?? mark._CalculatedScoreString;
+	});
+
 	const grade = $derived(
 		hypotheticalMode
 			? hypotheticalGrade / 100
@@ -229,7 +238,9 @@
 				{#if hypotheticalMode && !categories && !rawGradeCalcMatches}
 					<CircleAlertIcon class="mr-2 h-5 w-5" />
 				{/if}
-				{#if grade !== undefined}
+				{#if scaleLetter !== undefined}
+					<span>{scaleLetter}</span>
+				{:else if grade !== undefined}
 					<NumberFlow
 						{prefix}
 						value={grade}

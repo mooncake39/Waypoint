@@ -8,7 +8,8 @@ import type {
 	Course,
 	Gradebook,
 	Mark,
-	ReportPeriod
+	ReportPeriod,
+	ScoreScale
 } from '../../types/Gradebook';
 import type { RawClass, RawGradebook } from './gradebook';
 
@@ -22,6 +23,7 @@ interface ClassGrade {
 	calculatedMark: string;
 	manualMark: string;
 	maxValue: number;
+	reportCardScoreTypeId?: number;
 }
 
 interface MeasureType {
@@ -70,6 +72,11 @@ export interface ClassData {
 	assignments: GcdAssignment[];
 	gradeBookCategories: { id: number; name: string }[];
 	gradeBookScoreTypes: ScoreType[];
+	reportCardScoreTypes?: {
+		id: number;
+		max: number;
+		details: { score: string; lowScore: number }[];
+	}[];
 }
 
 export interface LwoItem {
@@ -131,6 +138,21 @@ export function serverPercentage(gcd: ClassData): number | undefined {
 		);
 	}
 	return cg.pointsPossible > 0 ? (cg.points / cg.pointsPossible) * 100 : undefined;
+}
+
+/**
+ * The class's report-card scale when it isn't a percentage (e.g. Rubric 0–4),
+ * with its letter cutoffs. Rows with a negative low score (I, P, W, …) are not grades.
+ */
+export function buildScoreScale(gcd: ClassData): ScoreScale | undefined {
+	const cg = gcd.classGrades[0];
+	if (!cg || cg.maxValue === 100) return undefined;
+	const type = gcd.reportCardScoreTypes?.find((t) => t.id === cg.reportCardScoreTypeId);
+	const letters = (type?.details ?? [])
+		.filter((d) => d.lowScore >= 0)
+		.map((d) => ({ letter: d.score, low: d.lowScore }))
+		.sort((a, b) => b.low - a.low);
+	return letters.length ? { max: cg.maxValue, letters } : undefined;
 }
 
 // ---------- categories (§10.3) ----------
@@ -287,7 +309,8 @@ export function buildCourse(raw: RawClass): Course {
 			_ShortMarkName: gcd.GradingPeriodName,
 			// A teacher's manual override is what the portal shows.
 			_CalculatedScoreString: cg.manualMark || cg.calculatedMark,
-			_CalculatedScoreRaw: percentage === undefined ? '' : num(percentage)
+			_CalculatedScoreRaw: percentage === undefined ? '' : num(percentage),
+			_ScoreScale: buildScoreScale(gcd)
 		};
 	}
 

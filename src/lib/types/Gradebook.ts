@@ -1,6 +1,7 @@
 // From GradeCompass (https://github.com/PurelyAnecdotal/gradecompass), MIT License,
 // Copyright (c) 2026 The GradeCompass Authors. See LICENSE-gradecompass.txt.
-// Changed: _ScoreType widened from the literal 'Raw Score' to string; _StudentName added.
+// Changed: _ScoreType widened from the literal 'Raw Score' to string; _StudentName and
+// Mark._ScoreScale added.
 
 export interface GradebookResult {
 	Gradebook: Gradebook;
@@ -94,6 +95,19 @@ export interface Mark {
 	_CalculatedScoreString: string;
 	/** number (decimal) */
 	_CalculatedScoreRaw: string;
+
+	/**
+	 * Added by this app: present when the class is graded on a non-percent scale
+	 * (e.g. Rubric 0–4). The grade is then shown as a letter only.
+	 */
+	_ScoreScale?: ScoreScale;
+}
+
+export interface ScoreScale {
+	/** Top of the scale, e.g. 4 */
+	max: number;
+	/** Letter cutoffs on that scale, highest first, e.g. A ≥ 3.5 */
+	letters: { letter: string; low: number }[];
 }
 
 export interface Assignments {

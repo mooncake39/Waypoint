@@ -15,7 +15,7 @@
 		room: string;
 		teacher: string;
 		teacherEmail: string;
-		grade?: { letter: string; percentage: number };
+		grade?: { letter: string; percentage: number; letterOnly?: boolean };
 	}
 	const { index, name, period, room, teacher, grade }: Props = $props();
 
@@ -73,12 +73,17 @@
 
 	{#if grade}
 		<div class="flex flex-col items-center gap-2 self-end sm:flex-row sm:self-auto">
-			<NumberFlow
-				prefix={grade.letter + ' '}
-				value={grade.percentage / 100}
-				format={{ style: 'percent', maximumFractionDigits: 3 }}
-				class="self-end sm:self-auto"
-			/>
+			{#if grade.letterOnly}
+				<!-- Graded on a non-percent scale (e.g. 0–4): the letter only. -->
+				<span class="self-end sm:self-auto">{grade.letter}</span>
+			{:else}
+				<NumberFlow
+					prefix={grade.letter + ' '}
+					value={grade.percentage / 100}
+					format={{ style: 'percent', maximumFractionDigits: 3 }}
+					class="self-end sm:self-auto"
+				/>
+			{/if}
 
 			<Progress
 				value={Math.min(isNaN(grade.percentage) ? 0 : grade.percentage, 100)}

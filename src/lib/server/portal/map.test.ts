@@ -4,6 +4,7 @@ import { parseSynergyAssignment } from '../../grades/assignments';
 import type { RawClass, RawGradebook } from './gradebook';
 import {
 	buildCourse,
+	buildScoreScale,
 	formatStudentName,
 	serverPercentage,
 	toGradebook,
@@ -292,5 +293,44 @@ describe('formatStudentName', () => {
 		['Student,', 'Student']
 	])('%j → %j', (input, expected) => {
 		expect(formatStudentName(input)).toBe(expected);
+	});
+});
+
+describe('buildScoreScale', () => {
+	const rubric = [
+		{ score: 'A', lowScore: 3.5 },
+		{ score: 'B', lowScore: 2.75 },
+		{ score: 'C', lowScore: 2 },
+		{ score: 'D', lowScore: 1.5 },
+		{ score: 'F', lowScore: 0 },
+		{ score: 'I', lowScore: -1 },
+		{ score: 'W', lowScore: -1 }
+	];
+
+	test('percent classes have no scale', () => {
+		expect(buildScoreScale(classData)).toBeUndefined();
+		expect(buildCourse(rawClass).Marks!.Mark[0]._ScoreScale).toBeUndefined();
+	});
+
+	test('a 0–4 rubric class gets its letter cutoffs, without non-grade letters', () => {
+		const gcd: ClassData = {
+			...classData,
+			classGrades: [{ ...classData.classGrades[0], maxValue: 4, reportCardScoreTypeId: 59 }],
+			reportCardScoreTypes: [
+				{ id: 58, max: 100, details: [{ score: 'A', lowScore: 90 }] },
+				{ id: 59, max: 4, details: [...rubric].reverse() }
+			]
+		};
+		expect(buildScoreScale(gcd)).toEqual({
+			max: 4,
+			letters: [
+				{ letter: 'A', low: 3.5 },
+				{ letter: 'B', low: 2.75 },
+				{ letter: 'C', low: 2 },
+				{ letter: 'D', low: 1.5 },
+				{ letter: 'F', low: 0 }
+			]
+		});
+		expect(buildCourse({ ...rawClass, classData: gcd }).Marks!.Mark[0]._ScoreScale?.max).toBe(4);
 	});
 });
