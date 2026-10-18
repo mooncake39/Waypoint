@@ -6,9 +6,11 @@
 	import { Button } from '#lib/components/ui/button/index.ts';
 	import * as Item from '#lib/components/ui/item/index.ts';
 	import {
+		activeLastRefresh,
 		getReportPeriodName,
 		gradebookState,
 		initializeGradebookCatalog,
+		refreshInBackground,
 		switchReportPeriod
 	} from '#lib/grades/catalog.svelte.ts';
 	import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
@@ -53,8 +55,28 @@
 		});
 	}
 
+	const AUTO_REFRESH_MS = 60_000;
+
 	onMount(() => {
 		initializeGradebookCatalog();
+
+		// Auto-refresh the period being viewed every 60 s while the tab is visible.
+		const interval = setInterval(() => {
+			if (document.visibilityState === 'visible') void refreshInBackground();
+		}, AUTO_REFRESH_MS);
+
+		// Coming back to the tab: refresh at once if the data is older than the interval.
+		const onVisibilityChange = () => {
+			if (document.visibilityState !== 'visible') return;
+			const last = activeLastRefresh();
+			if (last !== undefined && Date.now() - last > AUTO_REFRESH_MS) void refreshInBackground();
+		};
+		document.addEventListener('visibilitychange', onVisibilityChange);
+
+		return () => {
+			clearInterval(interval);
+			document.removeEventListener('visibilitychange', onVisibilityChange);
+		};
 	});
 
 	// The saved login no longer works (or is missing): back to the login page.

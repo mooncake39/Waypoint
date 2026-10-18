@@ -38,6 +38,6 @@ Optional runtime env: `DEFAULT_DISTRICT` (`xx-district-psv`, used when the distr
 - `src/lib/grades/assignments.ts`, `src/lib/types/Gradebook.ts`: copied from GradeCompass (MIT, see `LICENSE-gradecompass.txt`)
 - `src/lib/grades/check.ts`: recomputes each class grade with GradeCompass math and compares it with the portal's
 - `src/lib/server/sessions.ts`: in-memory sessions, refresh coalescing, 30 s cache
-- `src/routes/login`, `src/routes/data`, `src/routes/logout`
+- `src/routes/(authed)/grades`: grades list and class pages (ported from GradeCompass); `src/routes/login`, `src/routes/logout`, `src/routes/api/*`
 
 Imports use `#lib/...ts` (Node subpath imports, set in `package.json`), because SvelteKit 3 removed `$lib`.

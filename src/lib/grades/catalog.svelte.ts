@@ -10,7 +10,8 @@ import {
 	getInitialGradebookCatalog,
 	gradebookRefreshNeeded,
 	saveGradebookCatalogToLocalStorage,
-	type GradebookCatalog
+	type GradebookCatalog,
+	type GradebookRecord
 } from './catalog';
 
 export const gradebookState = $state({}) as {
@@ -37,6 +38,40 @@ function setReportPeriodIndex(index: number) {
 	catalog.overrideIndex = index !== catalog.defaultIndex ? index : undefined;
 }
 
+/**
+ * Files a fetched record under the period it is for. If the grades are unchanged, the
+ * existing gradebook object is kept and only `lastRefresh` moves, so pages that rebuild
+ * on data changes (e.g. hypothetical mode) aren't reset by a refresh.
+ */
+function storeRecord(
+	catalog: GradebookCatalog,
+	record: GradebookRecord,
+	overrideIndex: number | undefined,
+	requestedIndex: number
+) {
+	const { gradebook } = record;
+	const receivedIndex = parseInt(gradebook.ReportingPeriod._Index);
+
+	const existing = catalog.recordCache[receivedIndex];
+	if (existing && JSON.stringify(existing.gradebook) === JSON.stringify(gradebook))
+		existing.lastRefresh = record.lastRefresh;
+	else catalog.recordCache[receivedIndex] = record;
+
+	if (overrideIndex === undefined) {
+		catalog.defaultIndex = receivedIndex;
+		catalog.canonicalReportPeriodEntries = gradebook.ReportingPeriods.ReportPeriod;
+	}
+
+	if (receivedIndex !== requestedIndex) {
+		gradebookState.notice =
+			overrideIndex === undefined
+				? `${gradebook.ReportingPeriod._GradePeriod} is now the current grading period`
+				: `${getReportPeriodName(requestedIndex)} is not available`;
+	} else {
+		setReportPeriodIndex(requestedIndex);
+	}
+}
+
 /** Shows `overrideIndex` (or the current period), fetching it if missing or stale. Throws. */
 async function loadReportPeriod({
 	overrideIndex,
@@ -58,24 +93,7 @@ async function loadReportPeriod({
 		if (forceRefresh || !record || gradebookRefreshNeeded(record)) {
 			catalog.receivingData = false;
 			const gradebookRecord = await getGradebookRecord(onReceivingData, overrideIndex);
-			const { gradebook } = gradebookRecord;
-
-			const receivedIndex = parseInt(gradebook.ReportingPeriod._Index);
-			catalog.recordCache[receivedIndex] = gradebookRecord;
-
-			if (overrideIndex === undefined) {
-				catalog.defaultIndex = receivedIndex;
-				catalog.canonicalReportPeriodEntries = gradebook.ReportingPeriods.ReportPeriod;
-			}
-
-			if (receivedIndex !== requestedIndex) {
-				gradebookState.notice =
-					overrideIndex === undefined
-						? `${gradebook.ReportingPeriod._GradePeriod} is now the current grading period`
-						: `${getReportPeriodName(requestedIndex)} is not available`;
-			} else {
-				setReportPeriodIndex(requestedIndex);
-			}
+			storeRecord(catalog, gradebookRecord, overrideIndex, requestedIndex);
 		} else {
 			setReportPeriodIndex(requestedIndex);
 		}
@@ -99,6 +117,40 @@ export async function switchReportPeriod(options: { overrideIndex?: number; forc
 	} catch (error) {
 		recordError(error);
 	}
+}
+
+let backgroundRefreshRunning = false;
+
+/**
+ * Refreshes the period being viewed without the loading banner (used by the 60 s
+ * auto-refresh). Skips if a visible load is already running. A failed refresh
+ * keeps the last data; only an expired login is surfaced.
+ */
+export async function refreshInBackground() {
+	const catalog = gradebookState.gradebookCatalog;
+	if (!catalog || catalog.loadingIndex !== undefined || backgroundRefreshRunning) return;
+
+	backgroundRefreshRunning = true;
+	const { overrideIndex } = catalog;
+	try {
+		const record = await getGradebookRecord(undefined, overrideIndex);
+		// The user may have switched periods meanwhile; only apply to what's still shown.
+		if (gradebookState.gradebookCatalog !== catalog || catalog.overrideIndex !== overrideIndex) return;
+		storeRecord(catalog, record, overrideIndex, overrideIndex ?? catalog.defaultIndex);
+		gradebookState.loadingError = undefined;
+		saveGradebookCatalogToLocalStorage(catalog);
+	} catch (error) {
+		if (error instanceof SessionExpiredError) recordError(error);
+		else console.warn('Background refresh failed; keeping the last data', error);
+	} finally {
+		backgroundRefreshRunning = false;
+	}
+}
+
+/** When the viewed period was last refreshed (ms), if it has been loaded. */
+export function activeLastRefresh() {
+	const catalog = gradebookState.gradebookCatalog;
+	return catalog?.recordCache[catalog.overrideIndex ?? catalog.defaultIndex]?.lastRefresh;
 }
 
 let initialized = false;
