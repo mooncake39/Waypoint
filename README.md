@@ -41,3 +41,11 @@ Optional runtime env: `DEFAULT_DISTRICT` (`xx-district-psv`, used when the distr
 - `src/routes/(authed)/grades`: grades list and class pages (ported from GradeCompass); `src/routes/login`, `src/routes/logout`, `src/routes/api/*`
 
 Imports use `#lib/...ts` (Node subpath imports, set in `package.json`), because SvelteKit 3 removed `$lib`.
+
+## Credits and license
+
+Waypoint is MIT-licensed (see `LICENSE`).
+
+It builds on [GradeCompass](https://github.com/PurelyAnecdotal/gradecompass) by The GradeCompass Authors (MIT). Its grade calculation engine, grades pages, theme and several components are reused or adapted here. It also includes UI components from [shadcn-svelte](https://github.com/huntabyte/shadcn-svelte) (MIT). See `THIRD_PARTY_NOTICES.md` for details, and `LICENSE-gradecompass.txt` and `LICENSE-shadcn-svelte.txt` for their licenses.
+
+Waypoint is an independent, unofficial tool. It is not affiliated with or endorsed by GradeCompass or Edupoint Educational Systems LLC. StudentVUE and Synergy are trademarks of Edupoint.

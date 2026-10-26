@@ -42,5 +42,6 @@
 	"imports": {
 		"#lib": "./src/lib",
 		"#lib/*": "./src/lib/*"
-	}
+	},
+	"license": "MIT"
 }
