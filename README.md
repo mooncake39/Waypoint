@@ -1,6 +1,6 @@
 # Waypoint
 
-A self-hosted StudentVUE grade viewer and calculator. Log in with your district account to see your grades, try hypothetical scores and track changes. See `../gradecompass-main/studentvue-web-api-handoff.md` for the portal protocol.
+A self-hosted StudentVUE grade viewer and calculator. Log in with your district account to see your grades, try hypothetical scores and track changes.
 
 ## Features
 
