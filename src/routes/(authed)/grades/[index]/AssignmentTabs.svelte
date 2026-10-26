@@ -1,4 +1,5 @@
 <script lang="ts">
+	// Adapted from GradeCompass (MIT, see LICENSE-gradecompass.txt).
 	import { bgColorVariants, type BadgeColor } from '#lib/ui.ts';
 	import * as Tabs from '#lib/components/ui/tabs/index.ts';
 	import type {

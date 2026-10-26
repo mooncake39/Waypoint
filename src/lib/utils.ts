@@ -1,3 +1,6 @@
+// From GradeCompass (MIT, see LICENSE-gradecompass.txt); the shadcn-svelte
+// helpers (MIT, see LICENSE-shadcn-svelte.txt).
+
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 

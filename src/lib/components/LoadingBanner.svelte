@@ -1,4 +1,5 @@
 <script lang="ts">
+	// Adapted from GradeCompass (MIT, see LICENSE-gradecompass.txt).
 	import * as Item from '#lib/components/ui/item/index.ts';
 	import { Spinner } from '#lib/components/ui/spinner/index.ts';
 	import { fade, fly } from 'svelte/transition';

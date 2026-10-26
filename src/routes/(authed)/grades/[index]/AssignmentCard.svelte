@@ -1,4 +1,5 @@
 <script lang="ts">
+	// Adapted from GradeCompass (MIT, see LICENSE-gradecompass.txt).
 	import { bgColorVariants, type BadgeColor } from '#lib/ui.ts';
 	import DateBadge from '#lib/components/DateBadge.svelte';
 	import { Badge } from '#lib/components/ui/badge/index.ts';

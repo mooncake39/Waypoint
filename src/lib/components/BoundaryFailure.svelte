@@ -1,4 +1,5 @@
 <script lang="ts">
+	// Adapted from GradeCompass (MIT, see LICENSE-gradecompass.txt).
 	import { dev } from '$app/env';
 	import * as Alert from '#lib/components/ui/alert/index.ts';
 

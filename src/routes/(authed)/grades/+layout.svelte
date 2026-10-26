@@ -1,4 +1,5 @@
 <script lang="ts">
+	// Adapted from GradeCompass (MIT, see LICENSE-gradecompass.txt).
 	import { goto } from '$app/navigation';
 	import BoundaryFailure from '#lib/components/BoundaryFailure.svelte';
 	import RefreshIndicator from '#lib/components/RefreshIndicator.svelte';

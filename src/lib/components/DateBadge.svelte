@@ -1,4 +1,5 @@
 <script lang="ts">
+	// Adapted from GradeCompass (MIT, see LICENSE-gradecompass.txt).
 	import { fullDateFormatter, getRelativeTime, shortDateFormatter } from '#lib/format.ts';
 	import { Badge } from '#lib/components/ui/badge/index.ts';
 

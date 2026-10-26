@@ -1,4 +1,5 @@
 <script lang="ts">
+	// Adapted from GradeCompass (MIT, see LICENSE-gradecompass.txt).
 	import * as Item from '#lib/components/ui/item/index.ts';
 	import * as Table from '#lib/components/ui/table/index.ts';
 	import { calculateGradePercentage, type Category } from '#lib/grades/assignments.ts';

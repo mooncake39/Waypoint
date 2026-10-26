@@ -1,4 +1,5 @@
 <script lang="ts">
+	// Adapted from GradeCompass (MIT, see LICENSE-gradecompass.txt).
 	import * as Select from '#lib/components/ui/select/index.ts';
 	import type { ReportPeriod } from '#lib/types/Gradebook.ts';
 	import CloudCheckIcon from '@lucide/svelte/icons/cloud-check';

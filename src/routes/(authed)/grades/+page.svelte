@@ -1,4 +1,5 @@
 <script lang="ts">
+	// Adapted from GradeCompass (MIT, see LICENSE-gradecompass.txt).
 	import { removeCourseType } from '#lib/format.ts';
 	import { brand } from '#lib/brand.ts';
 	import * as Alert from '#lib/components/ui/alert/index.ts';

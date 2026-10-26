@@ -1,4 +1,5 @@
 <script lang="ts">
+	// Adapted from GradeCompass (MIT, see LICENSE-gradecompass.txt).
 	import * as Chart from '#lib/components/ui/chart/index.ts';
 	import {
 		calculateCourseGradePercentageFromCategories,

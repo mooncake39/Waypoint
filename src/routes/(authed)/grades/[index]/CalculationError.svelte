@@ -1,4 +1,5 @@
 <script lang="ts">
+	// Adapted from GradeCompass (MIT, see LICENSE-gradecompass.txt).
 	import { brand } from '#lib/brand.ts';
 	import * as Alert from '#lib/components/ui/alert/index.ts';
 	import AlertCircleIcon from '@lucide/svelte/icons/circle-alert';

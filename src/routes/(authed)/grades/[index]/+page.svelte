@@ -1,4 +1,5 @@
 <script lang="ts">
+	// Adapted from GradeCompass (MIT, see LICENSE-gradecompass.txt).
 	import { page } from '$app/state';
 	import { numberFlowDefaultEasing, tailwindColors } from '#lib/ui.ts';
 	import { removeCourseType } from '#lib/format.ts';

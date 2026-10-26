@@ -1,3 +1,6 @@
+/* Theme from GradeCompass (MIT, see LICENSE-gradecompass.txt), based on shadcn-svelte
+   (MIT, see LICENSE-shadcn-svelte.txt). */
+
 @import 'tailwindcss';
 
 @import '@fontsource-variable/inter';
