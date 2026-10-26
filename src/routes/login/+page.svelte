@@ -158,6 +158,10 @@
 					</Button>
 				</Field.Field>
 			</Field.Group>
+
+			<p class="text-muted-foreground text-center text-xs">
+				<a href="/privacy" class="underline">How {brand} handles your data</a>
+			</p>
 		</form>
 	</main>
 </div>

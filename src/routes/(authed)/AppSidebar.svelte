@@ -109,6 +109,7 @@
 				Your login is saved in this browser so it can reconnect to your district portal. Grades pass
 				through this app's own server and aren't stored there.
 			{/if}
+			<a href="/privacy" class="mt-1 block underline">Privacy</a>
 		</Sidebar.MenuItem>
 	</Sidebar.Content>
 
