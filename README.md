@@ -33,6 +33,7 @@ PORT=3000 node build
 - Set `ORIGIN` **at build time** to the URL people will use. SvelteKit 3 reads it from `paths.origin` when building, not when starting.
 - Serve the app over **HTTPS** (for example behind a reverse proxy). The session cookie is marked Secure, so over plain HTTP logins only work at `http://localhost`.
 - Everything is held in memory: restarting the server ends all sessions, and the browser then logs in again on its own.
+- Each account can attempt a login at most once every 3 seconds; extra attempts get HTTP 429 and never reach the district portal.
 
 ## Configuration
 

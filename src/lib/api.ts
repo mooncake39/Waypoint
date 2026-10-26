@@ -24,14 +24,23 @@ export class LoginFailedError extends Error {
 	}
 }
 
+const postLogin = (credentials: Credentials) =>
+	fetch('/api/login', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(credentials)
+	});
+
 export async function login(credentials: Credentials) {
 	let res: Response;
 	try {
-		res = await fetch('/api/login', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(credentials)
-		});
+		res = await postLogin(credentials);
+		// The server allows one attempt per account every 3 seconds: wait it out once.
+		if (res.status === 429) {
+			const seconds = Math.min(Number(res.headers.get('Retry-After')) || 3, 10);
+			await new Promise((r) => setTimeout(r, seconds * 1000));
+			res = await postLogin(credentials);
+		}
 	} catch {
 		throw new LoginFailedError('network', "Couldn't reach the server");
 	}

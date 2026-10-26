@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import { fetchGradebook, SessionExpiredError } from './api';
+import { fetchGradebook, login, LoginFailedError, SessionExpiredError } from './api';
 import { loadCredentials, saveCredentials } from './credentials';
 
 function memoryStorage() {
@@ -100,5 +100,40 @@ describe('fetchGradebook', () => {
 
 		await expect(fetchGradebook()).rejects.not.toBeInstanceOf(SessionExpiredError);
 		expect(loadCredentials()?.password).toBe('p');
+	});
+});
+
+describe('login', () => {
+	const creds = { district: 'd', username: 'u', password: 'p' };
+	const tooSoon = () =>
+		json({ kind: 'rate_limited', error: 'Please wait a few seconds before trying again.' }, 429);
+
+	test('waits out a 429 once, then succeeds', async () => {
+		vi.useFakeTimers();
+		const fetchMock = vi
+			.fn()
+			.mockResolvedValueOnce(
+				new Response('{}', { status: 429, headers: { 'Retry-After': '2' } })
+			)
+			.mockResolvedValueOnce(json({ ok: true }));
+		vi.stubGlobal('fetch', fetchMock);
+
+		const result = login(creds);
+		await vi.advanceTimersByTimeAsync(2000);
+		await expect(result).resolves.toBeUndefined();
+		expect(fetchMock).toHaveBeenCalledTimes(2);
+		vi.useRealTimers();
+	});
+
+	test('a second 429 is reported as rate_limited, which re-login treats as temporary', async () => {
+		vi.useFakeTimers();
+		vi.stubGlobal('fetch', vi.fn(async () => tooSoon()));
+
+		const result = login(creds);
+		const assertion = expect(result).rejects.toMatchObject({ kind: 'rate_limited' });
+		await vi.advanceTimersByTimeAsync(3000);
+		await assertion;
+		await expect(result).rejects.toBeInstanceOf(LoginFailedError);
+		vi.useRealTimers();
 	});
 });

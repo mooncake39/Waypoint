@@ -5,14 +5,17 @@ import type { Cookies } from '@sveltejs/kit';
 import { normalizeDistrictUrl } from './district';
 import { login, LoginError } from './portal/login';
 import { createSession } from './sessions';
+import { accountKey, loginThrottle } from './throttle';
 
 /** Used when the district field is left blank. */
 export const DEFAULT_DISTRICT = process.env.DEFAULT_DISTRICT || 'xx-district-psv';
 
 export type LoginFailure = {
 	/** `credentials`: the portal rejected them; anything else may be temporary. */
-	kind: 'invalid_district' | 'missing_fields' | LoginError['kind'];
+	kind: 'invalid_district' | 'missing_fields' | 'rate_limited' | LoginError['kind'];
 	error: string;
+	/** For `rate_limited`: seconds until the account may try again. */
+	retryAfterSeconds?: number;
 };
 
 export async function startSession(
@@ -29,6 +32,15 @@ export async function startSession(
 		};
 	if (!input.username || !input.password)
 		return { kind: 'missing_fields', error: 'Enter your username and password' };
+
+	// At most one attempt per account every 3 seconds; early ones never reach the portal.
+	const waitMs = loginThrottle.take(accountKey(base, input.username));
+	if (waitMs > 0)
+		return {
+			kind: 'rate_limited',
+			error: 'Please wait a few seconds before trying again.',
+			retryAfterSeconds: Math.ceil(waitMs / 1000)
+		};
 
 	let client;
 	try {
