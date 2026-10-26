@@ -23,17 +23,33 @@ npm run dev
 
 Open http://localhost:5173, then log in with your district (the part before `.edupoint.com` in your portal's address, or the full portal link), username and password. Or choose **Try the demo**.
 
-## Running in production
+## Running with Docker
 
 ```bash
-ORIGIN=https://grades.example.com npm run build
+docker compose up -d --build
+```
+
+Waypoint then listens on port 3000. `docker-compose.yml` lists the optional settings. Without Compose:
+
+```bash
+docker build -t waypoint .
+docker run -d -p 3000:3000 --restart unless-stopped waypoint
+```
+
+- For anything beyond your own computer, put it behind an **HTTPS** reverse proxy (for example Caddy, nginx or Traefik). The session cookie is marked Secure, which browsers only accept over HTTPS or at `http://localhost`. On a trusted home network without HTTPS, set `SECURE_COOKIE=false` instead.
+- The container reports its health at `/healthz`.
+- Everything is held in memory: restarting the container ends all sessions, and the browser then logs in again on its own.
+- Each account can attempt a login at most once every 3 seconds; extra attempts get HTTP 429 and never reach the district portal.
+
+## Running without Docker
+
+```bash
+npm ci
+npm run build
 PORT=3000 node build
 ```
 
-- Set `ORIGIN` **at build time** to the URL people will use. SvelteKit 3 reads it from `paths.origin` when building, not when starting.
-- Serve the app over **HTTPS** (for example behind a reverse proxy). The session cookie is marked Secure, so over plain HTTP logins only work at `http://localhost`.
-- Everything is held in memory: restarting the server ends all sessions, and the browser then logs in again on its own.
-- Each account can attempt a login at most once every 3 seconds; extra attempts get HTTP 429 and never reach the district portal.
+The same notes apply. Optionally set `ORIGIN` at build time to the public URL (SvelteKit 3 reads it from `paths.origin` when building); the app has no HTML form posts, so it isn't required.
 
 ## Configuration
 
@@ -46,6 +62,7 @@ Runtime environment variables, all optional:
 | `SESSION_TTL_MINUTES` | `30` | Ends sessions idle for this long |
 | `PORTAL_TIMEOUT_MS` | `20000` | Timeout for each request to the district portal |
 | `ALLOWED_DISTRICT_HOSTS` | (any) | Comma-separated portal hosts to allow, e.g. `xx-district-psv.edupoint.com` |
+| `SECURE_COOKIE` | (automatic) | Set to `false` only when serving over plain HTTP on a trusted network |
 
 ## Privacy
 
@@ -79,6 +96,8 @@ npm run convert    # dev-only: convert capture/output/ and check every class gra
 - `src/lib/grades/`: the grade calculation engine (`assignments.ts`, from GradeCompass), the browser's grade cache and auto-refresh (`catalog*.ts`) and a self-check against the portal's grades (`check.ts`)
 - `src/routes/(authed)/grades/`: the grades list and class pages
 - `src/routes/login`, `src/routes/privacy`, `src/routes/api/`: login page, privacy page and the JSON endpoints (`/api/login`, `/api/gradebook`, `/api/demo/gradebook`)
+- `src/routes/healthz`: health check used by Docker
+- `Dockerfile`, `docker-compose.yml`: container build and setup
 
 ## Credits and license
 

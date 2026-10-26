@@ -1,0 +1,12 @@
+services:
+  waypoint:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      # All optional; see the README's Configuration section.
+      # DEFAULT_DISTRICT: xx-district-psv
+      # SESSION_TTL_MINUTES: "30"
+      # Only for plain HTTP (no HTTPS reverse proxy) on a trusted home network:
+      # SECURE_COOKIE: "false"
+    restart: unless-stopped

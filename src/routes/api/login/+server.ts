@@ -1,4 +1,4 @@
-import { startSession } from '#lib/server/auth.ts';
+import { cookieSecure, startSession } from '#lib/server/auth.ts';
 import { json } from '@sveltejs/kit';
 
 /** POST {district, username, password} → 200 {ok: true} | 400/401 {kind, error} | 429 (wait, see Retry-After). */
@@ -10,7 +10,7 @@ export const POST = async ({ request, cookies, url }) => {
 		return json({ kind: 'missing_fields', error: 'Expected a JSON body' }, { status: 400 });
 	}
 
-	const failure = await startSession(body, cookies, url.protocol === 'https:');
+	const failure = await startSession(body, cookies, cookieSecure(url));
 	if (failure?.kind === 'rate_limited')
 		return json(failure, {
 			status: 429,

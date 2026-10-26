@@ -1,0 +1,9 @@
+node_modules
+build
+.svelte-kit
+capture
+.git
+.env
+.env.*
+*.log
+.DS_Store

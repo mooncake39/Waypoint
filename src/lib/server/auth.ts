@@ -7,6 +7,15 @@ import { login, LoginError } from './portal/login';
 import { createSession } from './sessions';
 import { accountKey, loginThrottle } from './throttle';
 
+/**
+ * Whether the session cookie gets the Secure flag. Defaults to whether the request
+ * looked like HTTPS (the Node adapter assumes HTTPS unless told otherwise, which
+ * suits a reverse proxy). SECURE_COOKIE=false is for plain HTTP on a trusted network,
+ * where browsers would otherwise drop the cookie and logins would never stick.
+ */
+export const cookieSecure = (url: URL) =>
+	process.env.SECURE_COOKIE ? process.env.SECURE_COOKIE !== 'false' : url.protocol === 'https:';
+
 /** Used when the district field is left blank. */
 export const DEFAULT_DISTRICT = process.env.DEFAULT_DISTRICT || 'xx-district-psv';
 
