@@ -16,8 +16,8 @@ import { accountKey, loginThrottle } from './throttle';
 export const cookieSecure = (url: URL) =>
 	process.env.SECURE_COOKIE ? process.env.SECURE_COOKIE !== 'false' : url.protocol === 'https:';
 
-/** Used when the district field is left blank. */
-export const DEFAULT_DISTRICT = process.env.DEFAULT_DISTRICT || 'xx-district-psv';
+/** Optional: used when the district field is left blank. No default otherwise. */
+export const DEFAULT_DISTRICT = process.env.DEFAULT_DISTRICT?.trim() || '';
 
 export type LoginFailure = {
 	/** `credentials`: the portal rejected them; anything else may be temporary. */
@@ -33,6 +33,8 @@ export async function startSession(
 	secure: boolean
 ): Promise<LoginFailure | undefined> {
 	const district = (input.district ?? '').trim();
+	if (!district && !DEFAULT_DISTRICT)
+		return { kind: 'invalid_district', error: 'Enter your district' };
 	const base = normalizeDistrictUrl(district || DEFAULT_DISTRICT);
 	if (!base)
 		return {

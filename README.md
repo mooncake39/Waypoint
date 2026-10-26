@@ -58,7 +58,7 @@ Runtime environment variables, all optional:
 | Variable | Default | Purpose |
 |---|---|---|
 | `PORT` | `3000` | Port the server listens on |
-| `DEFAULT_DISTRICT` | `xx-district-psv` | District used when the login form's district field is left blank |
+| `DEFAULT_DISTRICT` | (none) | District to use when the login form's district field is left blank, e.g. `xx-district-psv` |
 | `SESSION_TTL_MINUTES` | `30` | Ends sessions idle for this long |
 | `PORTAL_TIMEOUT_MS` | `20000` | Timeout for each request to the district portal |
 | `ALLOWED_DISTRICT_HOSTS` | (any) | Comma-separated portal hosts to allow, e.g. `xx-district-psv.edupoint.com` |

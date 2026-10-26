@@ -32,6 +32,13 @@ test('a second attempt on the same account within 3 s never reaches the portal',
 	expect(login).toHaveBeenCalledTimes(2);
 });
 
+test('a blank district is rejected when no DEFAULT_DISTRICT is set', async () => {
+	await expect(
+		startSession({ district: ' ', username: 'blank-district', password: 'pw' }, cookies, true)
+	).resolves.toMatchObject({ kind: 'invalid_district', error: 'Enter your district' });
+	expect(login).not.toHaveBeenCalled();
+});
+
 test('other accounts are not affected', async () => {
 	await attempt('throttle-b');
 	await expect(attempt('throttle-c')).resolves.toBeUndefined();

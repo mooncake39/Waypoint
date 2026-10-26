@@ -107,14 +107,16 @@
 					<Input
 						type="text"
 						id="district"
-						placeholder={data.defaultDistrict}
+						placeholder={data.defaultDistrict || 'xx-district-psv'}
+						required={!data.defaultDistrict}
 						autocomplete="on"
 						autocorrect="off"
 						bind:value={district}
 					/>
 					<Field.Description>
 						The part before <code>.edupoint.com</code> in your portal's address, or paste the whole
-						portal link. Leave blank for {data.defaultDistrict}.
+						portal link.{#if data.defaultDistrict}
+							Leave blank for {data.defaultDistrict}.{/if}
 					</Field.Description>
 				</Field.Field>
 
