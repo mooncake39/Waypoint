@@ -5,13 +5,16 @@
 	import * as Sidebar from '#lib/components/ui/sidebar/index.ts';
 	import { Spinner } from '#lib/components/ui/spinner/index.ts';
 	import { loadCredentials } from '#lib/credentials.ts';
+	import { isDemo } from '#lib/demo.ts';
 	import NotebookTextIcon from '@lucide/svelte/icons/notebook-text';
 	import AppSidebar from './AppSidebar.svelte';
 
 	let { children } = $props();
 
+	const demo = isDemo();
+
 	// Without a saved password there is no way to (re)start a server session.
-	if (!loadCredentials()?.password) void goto('/login', { replaceState: true });
+	if (!demo && !loadCredentials()?.password) void goto('/login', { replaceState: true });
 </script>
 
 <svelte:boundary>
@@ -26,7 +29,10 @@
 					class="mr-auto ml-1 flex items-center gap-2 text-xl font-semibold tracking-tight whitespace-nowrap"
 				>
 					<NotebookTextIcon class="size-6" />
-					<span>{brand}</span>
+					<span>
+						{brand}
+						{#if demo}<span class="text-muted-foreground">Demo</span>{/if}
+					</span>
 				</a>
 			</header>
 

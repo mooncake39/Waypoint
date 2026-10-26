@@ -3,7 +3,9 @@
 export const LocalStorageKey = {
 	credentials: 'credentials',
 	/** Versioned: the old GradeCompass cache held XML. */
-	gradebook: 'gradebook-json-1'
+	gradebook: 'gradebook-json-1',
+	/** `true` while demo mode is on. */
+	demo: 'demo'
 } as const;
 
 export function readJson<T>(key: string): T | undefined {

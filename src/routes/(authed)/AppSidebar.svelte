@@ -10,6 +10,7 @@
 	import * as Sidebar from '#lib/components/ui/sidebar/index.ts';
 	import { Spinner } from '#lib/components/ui/spinner/index.ts';
 	import { clearCredentials, loadCredentials } from '#lib/credentials.ts';
+	import { exitDemo, isDemo } from '#lib/demo.ts';
 	import { removeCourseType } from '#lib/format.ts';
 	import { clearGradebookCatalogFromLocalStorage } from '#lib/grades/catalog.ts';
 	import { initializeGradebookCatalog, resetGradebookState } from '#lib/grades/catalog.svelte.ts';
@@ -24,6 +25,7 @@
 	import { onMount } from 'svelte';
 
 	const courses = $derived(getActiveGradebook()?.Courses.Course);
+	const demo = isDemo();
 	const username = loadCredentials()?.username;
 	// Falls back to the username until the gradebook (which carries the name) has loaded.
 	const displayName = $derived(getActiveGradebook()?._StudentName ?? username ?? 'Student');
@@ -37,6 +39,11 @@
 		await goto('/login');
 	}
 
+	async function leaveDemo() {
+		exitDemo();
+		await goto('/login');
+	}
+
 	onMount(() => {
 		initializeGradebookCatalog();
 	});
@@ -47,7 +54,10 @@
 		<Sidebar.MenuItem>
 			<div class="m-2 flex flex-row items-center">
 				<NotebookTextIcon class="size-6" />
-				<span class="ml-2 text-lg font-bold tracking-tight">{brand}</span>
+				<span class="ml-2 text-lg font-bold tracking-tight">
+					{brand}
+					{#if demo}<span class="text-muted-foreground">Demo</span>{/if}
+				</span>
 			</div>
 		</Sidebar.MenuItem>
 	</Sidebar.Header>
@@ -92,8 +102,12 @@
 		</Sidebar.Menu>
 
 		<Sidebar.MenuItem class="text-muted-foreground mx-2 mt-auto rounded-md border p-3 text-xs">
-			Your login is saved in this browser so it can reconnect to your district portal. Grades pass
-			through this app's own server and aren't stored there.
+			{#if demo}
+				You're viewing made-up grades. Nothing here comes from a real account.
+			{:else}
+				Your login is saved in this browser so it can reconnect to your district portal. Grades pass
+				through this app's own server and aren't stored there.
+			{/if}
 		</Sidebar.MenuItem>
 	</Sidebar.Content>
 
@@ -123,10 +137,17 @@
 								{mode.current === 'light' ? 'Dark Mode' : 'Light Mode'}
 							</DropdownMenu.Item>
 
-							<DropdownMenu.Item onclick={logOut} class="h-9">
-								<LogOutIcon />
-								Log Out
-							</DropdownMenu.Item>
+							{#if demo}
+								<DropdownMenu.Item onclick={leaveDemo} class="h-9">
+									<LogOutIcon />
+									Exit Demo
+								</DropdownMenu.Item>
+							{:else}
+								<DropdownMenu.Item onclick={logOut} class="h-9">
+									<LogOutIcon />
+									Log Out
+								</DropdownMenu.Item>
+							{/if}
 						</DropdownMenu.Content>
 					</DropdownMenu.Root>
 				</div>

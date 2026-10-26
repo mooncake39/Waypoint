@@ -12,6 +12,7 @@
 	import * as Field from '#lib/components/ui/field/index.ts';
 	import { Input } from '#lib/components/ui/input/index.ts';
 	import { loadCredentials, saveCredentials } from '#lib/credentials.ts';
+	import { exitDemo, isDemo, startDemo } from '#lib/demo.ts';
 	import { clearGradebookCatalogFromLocalStorage } from '#lib/grades/catalog.ts';
 	import { resetGradebookState } from '#lib/grades/catalog.svelte.ts';
 	import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
@@ -31,9 +32,14 @@
 
 	const sessionExpired = $derived(page.url.searchParams.has('expired') && !loginError);
 
+	async function openDemo() {
+		startDemo();
+		await goto('/grades');
+	}
+
 	onMount(() => {
 		const saved = loadCredentials();
-		if (saved?.password) {
+		if (isDemo() || saved?.password) {
 			void goto('/grades', { replaceState: true });
 			return;
 		}
@@ -51,6 +57,7 @@
 
 		try {
 			await login({ district, username, password });
+			if (isDemo()) exitDemo(); // drop the demo's made-up grades
 
 			// A different account must not see the previous account's cached grades.
 			const previous = loadCredentials();
@@ -145,6 +152,9 @@
 				<Field.Field>
 					<Button type="submit" class="w-full" variant="card" disabled={loggingIn}>
 						<LogInIcon class="h-4 w-4" /> Log in
+					</Button>
+					<Button type="button" variant="ghost" class="w-full" onclick={openDemo}>
+						Try the demo with made-up grades
 					</Button>
 				</Field.Field>
 			</Field.Group>

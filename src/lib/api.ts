@@ -4,6 +4,7 @@
 // the portal rejects the stored password.
 
 import { forgetPassword, loadCredentials, type Credentials } from './credentials';
+import { LocalStorageKey, readJson } from './storage';
 import type { Gradebook } from './types/Gradebook';
 
 /** The user has to log in again: no stored password, or the portal rejected it. */
@@ -76,9 +77,9 @@ async function getWithRelogin(url: string) {
  * `fetchedAt` is when the server got it from the portal (it may serve a cached copy).
  */
 export async function fetchGradebook(period?: number, onReceivingData?: () => void) {
-	const res = await getWithRelogin(
-		period === undefined ? '/api/gradebook' : `/api/gradebook?period=${period}`
-	);
+	// Demo mode reads made-up grades; checked inline so this module doesn't import the demo state.
+	const base = readJson<boolean>(LocalStorageKey.demo) === true ? '/api/demo/gradebook' : '/api/gradebook';
+	const res = await getWithRelogin(period === undefined ? base : `${base}?period=${period}`);
 	onReceivingData?.();
 	const gradebook = (await res.json()) as Gradebook;
 	const fetchedAt = Number(res.headers.get('X-Fetched-At')) || Date.now();
