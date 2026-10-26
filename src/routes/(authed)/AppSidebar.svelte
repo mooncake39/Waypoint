@@ -15,6 +15,7 @@
 	import { clearGradebookCatalogFromLocalStorage } from '#lib/grades/catalog.ts';
 	import { initializeGradebookCatalog, resetGradebookState } from '#lib/grades/catalog.svelte.ts';
 	import { getActiveGradebook } from '#lib/grades/gradebook.ts';
+	import Logo from '#lib/components/Logo.svelte';
 	import CircleUserIcon from '@lucide/svelte/icons/circle-user';
 	import EllipsisVerticalIcon from '@lucide/svelte/icons/ellipsis-vertical';
 	import LogOutIcon from '@lucide/svelte/icons/log-out';
@@ -53,7 +54,7 @@
 	<Sidebar.Header>
 		<Sidebar.MenuItem>
 			<div class="m-2 flex flex-row items-center">
-				<NotebookTextIcon class="size-6" />
+				<Logo class="size-6" />
 				<span class="ml-2 text-lg font-bold tracking-tight">
 					{brand}
 					{#if demo}<span class="text-muted-foreground">Demo</span>{/if}

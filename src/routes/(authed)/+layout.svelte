@@ -7,7 +7,7 @@
 	import { Spinner } from '#lib/components/ui/spinner/index.ts';
 	import { loadCredentials } from '#lib/credentials.ts';
 	import { isDemo } from '#lib/demo.ts';
-	import NotebookTextIcon from '@lucide/svelte/icons/notebook-text';
+	import Logo from '#lib/components/Logo.svelte';
 	import AppSidebar from './AppSidebar.svelte';
 
 	let { children } = $props();
@@ -29,7 +29,7 @@
 					href="/grades"
 					class="mr-auto ml-1 flex items-center gap-2 text-xl font-semibold tracking-tight whitespace-nowrap"
 				>
-					<NotebookTextIcon class="size-6" />
+					<Logo class="size-6" />
 					<span>
 						{brand}
 						{#if demo}<span class="text-muted-foreground">Demo</span>{/if}

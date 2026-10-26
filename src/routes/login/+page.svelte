@@ -17,7 +17,7 @@
 	import { resetGradebookState } from '#lib/grades/catalog.svelte.ts';
 	import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
 	import LogInIcon from '@lucide/svelte/icons/log-in';
-	import NotebookTextIcon from '@lucide/svelte/icons/notebook-text';
+	import Logo from '#lib/components/Logo.svelte';
 	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 
@@ -97,7 +97,7 @@
 	<main class="flex grow items-center justify-center">
 		<form onsubmit={submit} class="m-4 flex w-full max-w-md flex-col gap-4">
 			<div class="mb-4 flex flex-col items-center gap-2">
-				<NotebookTextIcon class="h-8 w-8" />
+				<Logo class="h-8 w-8" />
 				<h1 class="text-xl font-bold">Log in to {brand}</h1>
 			</div>
 
